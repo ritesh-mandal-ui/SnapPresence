@@ -4,7 +4,9 @@ import streamlit as st
 
 
 def get_image_base64():
+  # Get the absolute path of the current file (footer.py)
   current_dir = Path(__file__).parent
+  # Navigate to src/assets/footer_logo.png
   img_path = current_dir.parent / "assets" / "footer_logo.png"
 
   if img_path.exists():
@@ -15,43 +17,37 @@ def get_image_base64():
 
 def footer_home():
   img_base64 = get_image_base64()
-  if img_base64:
-    st.markdown(
-        f"""
-        <div style="display: flex; justify-content: center; align-items: center; margin-top: 40px; margin-bottom: 20px;">
-            <img src="data:image/png;base64,{img_base64}" style="width: 100%; max-width: 900px; border-radius: 8px;" />
+  img_tag = (
+      f'<img src="data:image/png;base64,{img_base64}" style="max-height:25px" />'
+      if img_base64
+      else '<span style="color:white; font-weight:bold;">RITESH MANDAL</span>'
+  )
+
+  st.markdown(
+      f"""
+        <div style="margin-top:2rem; display:flex; gap:6px; justify-content:center; align-items:center">
+        <p style="font-weight:bold; color:white;"> Created with ❤️ by </p>  
+        {img_tag}
         </div>
         """,
-        unsafe_allow_html=True,
-    )
-  else:
-    st.markdown(
-        """
-        <div style="text-align: center; margin-top: 40px; color: white; font-weight: bold; font-size: 1.2rem;">
-            RITESH<br>MANDAL
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+      unsafe_allow_html=True,
+  )
 
 
 def footer_dashboard():
   img_base64 = get_image_base64()
-  if img_base64:
-    st.markdown(
-        f"""
-        <div style="display: flex; justify-content: center; align-items: center; margin-top: 40px; margin-bottom: 20px;">
-            <img src="data:image/png;base64,{img_base64}" style="width: 100%; max-width: 900px; border-radius: 8px;" />
+  img_tag = (
+      f'<img src="data:image/png;base64,{img_base64}" style="max-height:25px" />'
+      if img_base64
+      else '<span style="color:black; font-weight:bold;">RITESH MANDAL</span>'
+  )
+
+  st.markdown(
+      f"""
+        <div style="margin-top:2rem; display:flex; gap:6px; justify-content:center; align-items:center">
+        <p style="font-weight:bold; color:black;"> Created with ❤️ by </p>  
+        {img_tag}
         </div>
         """,
-        unsafe_allow_html=True,
-    )
-  else:
-    st.markdown(
-        """
-        <div style="text-align: center; margin-top: 40px; color: black; font-weight: bold; font-size: 1.2rem;">
-            RITESH<br>MANDAL
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+      unsafe_allow_html=True,
+  )
