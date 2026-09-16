@@ -10,7 +10,7 @@ def share_subject_dialog(
     subject_code
 ):
 
-    app_domain = "snappresence-main.streamlit.app"
+    app_domain = app_domain = "https://snappresence-yfxlcxdgu8vubz9ktrwmvz.streamlit.app"
 
     join_url = (
         f"{app_domain}/?join-code={subject_code}"
