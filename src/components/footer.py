@@ -32,41 +32,75 @@ def footer_home():
 
         image_tag = (
             f'<img src="data:image/png;base64,{image_base64}" '
-            f'style="max-height:25px; display:block;" />'
+            f'style="max-height:25px; width:auto; display:block;" />'
         )
 
     else:
 
         image_tag = (
-            '<span style="color:white; font-weight:bold;">'
+            '<span style="color:#111111; font-weight:bold;">'
             'RITESH MANDAL'
             '</span>'
         )
 
-    st.html(
+    st.markdown(
         f"""
         <div style="
+            width:100%;
             margin-top:2rem;
             padding:0.5rem 0 1rem 0;
             display:flex;
-            gap:6px;
             justify-content:center;
             align-items:center;
+            gap:6px;
             background:transparent;
+            color:#111111;
+            font-family:Arial, sans-serif;
+            font-size:16px;
+            font-weight:bold;
+            line-height:25px;
         ">
 
-            <p style="
-                font-weight:bold;
-                color:white;
-                margin:0;
+            <span style="
+                color:#111111 !important;
+                display:inline-block !important;
+                visibility:visible !important;
+                opacity:1 !important;
+                font-size:16px !important;
+                font-weight:bold !important;
+                white-space:nowrap !important;
             ">
-                Created with ❤️ by
-            </p>
+                Created with
+            </span>
+
+            <span style="
+                color:#111111 !important;
+                display:inline-block !important;
+                visibility:visible !important;
+                opacity:1 !important;
+                font-size:16px !important;
+                font-weight:bold !important;
+            ">
+                ❤️
+            </span>
+
+            <span style="
+                color:#111111 !important;
+                display:inline-block !important;
+                visibility:visible !important;
+                opacity:1 !important;
+                font-size:16px !important;
+                font-weight:bold !important;
+                white-space:nowrap !important;
+            ">
+                by
+            </span>
 
             {image_tag}
 
         </div>
-        """
+        """,
+        unsafe_allow_html=True
     )
 
 
@@ -78,7 +112,7 @@ def footer_dashboard():
 
         image_tag = (
             f'<img src="data:image/png;base64,{image_base64}" '
-            f'style="max-height:25px; display:block;" />'
+            f'style="max-height:25px; width:auto; display:block;" />'
         )
 
     else:

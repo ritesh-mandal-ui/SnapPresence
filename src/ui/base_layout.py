@@ -16,7 +16,7 @@ def style_background_home():
         [data-testid="stMain"],
         [data-testid="stMainBlockContainer"] {
 
-            background: #5865F2 !important;
+            background: #FFFFFF !important;
         }
 
         .stApp {
