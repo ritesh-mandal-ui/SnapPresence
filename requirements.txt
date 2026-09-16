@@ -11,3 +11,4 @@ pillow
 librosa
 resemblyzer
 webrtcvad-wheels
+setuptools<81
