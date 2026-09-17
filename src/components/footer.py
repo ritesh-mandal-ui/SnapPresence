@@ -32,18 +32,24 @@ def footer_home():
 
         image_tag = (
             f'<img src="data:image/png;base64,{image_base64}" '
-            f'style="max-height:25px; width:auto; display:block;" />'
+            f'style="height:25px; width:auto; '
+            f'display:inline-block; vertical-align:middle;" />'
         )
 
     else:
 
         image_tag = (
-            '<span style="color:#111111; font-weight:bold;">'
+            '<span style="'
+            'color:#111111; '
+            'font-weight:bold; '
+            'font-size:16px; '
+            'white-space:nowrap;'
+            '">'
             'RITESH MANDAL'
             '</span>'
         )
 
-    st.markdown(
+    st.html(
         f"""
         <div style="
             width:100%;
@@ -62,36 +68,26 @@ def footer_home():
         ">
 
             <span style="
-                color:#111111 !important;
-                display:inline-block !important;
-                visibility:visible !important;
-                opacity:1 !important;
-                font-size:16px !important;
-                font-weight:bold !important;
-                white-space:nowrap !important;
+                color:#111111;
+                font-size:16px;
+                font-weight:bold;
+                white-space:nowrap;
             ">
                 Created with
             </span>
 
             <span style="
-                color:#111111 !important;
-                display:inline-block !important;
-                visibility:visible !important;
-                opacity:1 !important;
-                font-size:16px !important;
-                font-weight:bold !important;
+                font-size:16px;
+                line-height:25px;
             ">
                 ❤️
             </span>
 
             <span style="
-                color:#111111 !important;
-                display:inline-block !important;
-                visibility:visible !important;
-                opacity:1 !important;
-                font-size:16px !important;
-                font-weight:bold !important;
-                white-space:nowrap !important;
+                color:#111111;
+                font-size:16px;
+                font-weight:bold;
+                white-space:nowrap;
             ">
                 by
             </span>
@@ -99,9 +95,9 @@ def footer_home():
             {image_tag}
 
         </div>
-        """,
-        unsafe_allow_html=True
+        """
     )
+
 
 
 def footer_dashboard():
