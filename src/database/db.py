@@ -4,10 +4,6 @@ import bcrypt
 from src.database.config import supabase
 
 
-# =========================================================
-# TEACHER AUTHENTICATION
-# =========================================================
-
 def hash_pass(password):
     return bcrypt.hashpw(
         password.encode(),
@@ -37,12 +33,14 @@ def check_teacher_exists(username):
 def create_teacher(
     username,
     password,
-    name
+    name,
+    email
 ):
     data = {
         "username": username,
         "password": hash_pass(password),
-        "name": name
+        "name": name,
+        "email": email
     }
 
     response = (
@@ -84,10 +82,6 @@ def teacher_login(
 
     return None
 
-
-# =========================================================
-# STUDENT MANAGEMENT
-# =========================================================
 
 def get_all_students():
     response = (
@@ -140,10 +134,6 @@ def update_student_voice_embedding(
 
     return response.data
 
-
-# =========================================================
-# SUBJECT MANAGEMENT
-# =========================================================
 
 def create_subject(
     subject_code,
@@ -205,11 +195,6 @@ def get_teacher_subjects(teacher_id):
             subjects = response.data
 
             for subject in subjects:
-
-                # -----------------------------------------
-                # TOTAL ENROLLED STUDENTS
-                # -----------------------------------------
-
                 subject_students = subject.get(
                     "subject_students"
                 )
@@ -223,10 +208,6 @@ def get_teacher_subjects(teacher_id):
                     )
                 else:
                     subject["total_students"] = 0
-
-                # -----------------------------------------
-                # TOTAL CLASSES
-                # -----------------------------------------
 
                 attendance = subject.get(
                     "attendance_logs",
@@ -242,10 +223,6 @@ def get_teacher_subjects(teacher_id):
                 )
 
                 subject["total_classes"] = unique_sessions
-
-                # -----------------------------------------
-                # REMOVE RAW RELATION DATA
-                # -----------------------------------------
 
                 subject.pop(
                     "subject_students",
@@ -267,10 +244,6 @@ def get_teacher_subjects(teacher_id):
 
     raise last_error
 
-
-# =========================================================
-# SUBJECT ENROLLMENT
-# =========================================================
 
 def enroll_student_to_subject(
     student_id,
@@ -328,10 +301,6 @@ def get_student_subjects(student_id):
     return response.data
 
 
-# =========================================================
-# ATTENDANCE
-# =========================================================
-
 def create_attendance(logs):
 
     if not logs:
@@ -362,6 +331,7 @@ def get_student_attendance(student_id):
     return response.data
 
 
+
 def get_attendance_for_teacher(teacher_id):
     response = (
         supabase
@@ -371,6 +341,36 @@ def get_attendance_for_teacher(teacher_id):
         )
         .eq(
             "subjects.teacher_id",
+            teacher_id
+        )
+        .execute()
+    )
+
+    return response.data
+def get_teacher_by_email(email):
+    response = (
+        supabase
+        .table("teachers")
+        .select("*")
+        .eq("email", email)
+        .execute()
+    )
+
+    if not response.data:
+        return None
+
+    return response.data[0]
+
+
+def update_teacher_password(teacher_id, new_password):
+    response = (
+        supabase
+        .table("teachers")
+        .update({
+            "password": hash_pass(new_password)
+        })
+        .eq(
+            "teacher_id",
             teacher_id
         )
         .execute()
