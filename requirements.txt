@@ -12,3 +12,4 @@ librosa
 resemblyzer
 webrtcvad-wheels
 setuptools<81
+streamlit-cookies-controller==0.0.4
