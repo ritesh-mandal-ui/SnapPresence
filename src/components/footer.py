@@ -26,70 +26,98 @@ def footer_home():
     st.markdown(
         """
         <style>
+
         [data-testid="stImage"] img {
             border-radius: 0 !important;
         }
+
+        /* =====================================================
+           HOME FOOTER
+           ===================================================== */
+
+        .st-key-home-footer {
+
+            position: fixed !important;
+
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+
+            width: 100% !important;
+
+            z-index: 999 !important;
+
+            background: transparent !important;
+
+            padding: 8px 0 10px 0 !important;
+
+            margin: 0 !important;
+        }
+
         </style>
         """,
         unsafe_allow_html=True
     )
 
-    st.markdown(
-        "<div style='height:20px;'></div>",
-        unsafe_allow_html=True
-    )
+    with st.container(key="home-footer"):
 
-    col1, col2, col3, col4 = st.columns(
-        [1, 1.2, 0.8, 1],
-        vertical_alignment="center"
-    )
-
-    with col2:
-
-        st.markdown(
-            """
-            <div style="
-                text-align:right;
-                font-size:16px;
-                font-weight:bold;
-                color:#111111;
-                white-space:nowrap;
-            ">
-                Created with ❤️ by
-            </div>
-            """,
-            unsafe_allow_html=True
+        col1, col2, col3 = st.columns(
+            [1, 1.2, 1],
+            vertical_alignment="center"
         )
 
-    with col3:
+        with col2:
 
-        if logo_path:
-
-            # Move logo slightly downward
-            st.markdown(
-                "<div style='height:8px;'></div>",
-                unsafe_allow_html=True
+            footer_col1, footer_col2 = st.columns(
+                [1, 1],
+                vertical_alignment="center"
             )
 
-            st.image(
-                logo_path,
-                width=120
-            )
+            with footer_col1:
 
-        else:
+                st.markdown(
+                    """
+                    <div style="
+                        text-align:right;
+                        font-size:16px;
+                        font-weight:bold;
+                        color:#111111;
+                        white-space:nowrap;
+                    ">
+                        Created with ❤️ by
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
 
-            st.markdown(
-                """
-                <div style="
-                    font-weight:bold;
-                    color:#111111;
-                    white-space:nowrap;
-                ">
-                    RITESH MANDAL
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
+            with footer_col2:
+
+                if logo_path:
+
+                    st.markdown(
+                        "<div style='margin-top:7px;'></div>",
+                        unsafe_allow_html=True
+                    )
+
+                    st.image(
+                        logo_path,
+                        width=120
+                    )
+
+                else:
+
+                    st.markdown(
+                        """
+                        <div style="
+                            font-weight:bold;
+                            color:#111111;
+                            white-space:nowrap;
+                        ">
+                            RITESH MANDAL
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
 
 
 def footer_dashboard():
@@ -99,9 +127,11 @@ def footer_dashboard():
     st.markdown(
         """
         <style>
+
         [data-testid="stImage"] img {
             border-radius: 0 !important;
         }
+
         </style>
         """,
         unsafe_allow_html=True
@@ -132,7 +162,6 @@ def footer_dashboard():
 
         if logo_path:
 
-            # Move logo slightly downward
             st.markdown(
                 "<div style='height:8px;'></div>",
                 unsafe_allow_html=True

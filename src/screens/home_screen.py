@@ -59,4 +59,12 @@ def home_screen():
             st.session_state["login_type"] = "teacher"
             st.rerun()
 
+    # Push the footer lower on the Home page
+    st.markdown(
+        """
+        <div style="height:180px;"></div>
+        """,
+        unsafe_allow_html=True
+    )
+
     footer_home()
