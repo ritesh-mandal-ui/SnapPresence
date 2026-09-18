@@ -87,18 +87,15 @@ def send_teacher_password_reset(email):
             code_challenge
         ) = generate_recovery_pkce()
 
-        # Keep verifier in Streamlit session
         st.session_state[
             "teacher_recovery_code_verifier"
         ] = code_verifier
 
-        # Also keep verifier in Supabase auth storage
         supabase.auth._storage.set_item(
             f"{supabase.auth._storage_key}-code-verifier",
             code_verifier
         )
 
-        # Start PKCE password recovery
         supabase.auth._request(
             "POST",
             "recover",
@@ -127,15 +124,6 @@ def check_teacher_recovery_session():
 
     try:
 
-        # -------------------------------------------------
-        # IMPORTANT:
-        # Only process recovery when ?code= exists.
-        #
-        # Normal teacher login also creates a Supabase
-        # session, so checking get_session() alone would
-        # incorrectly open the password reset screen.
-        # -------------------------------------------------
-
         code = st.query_params.get(
             "code"
         )
@@ -143,17 +131,9 @@ def check_teacher_recovery_session():
         if not code:
             return False
 
-        # -------------------------------------------------
-        # Get PKCE verifier from Streamlit session first
-        # -------------------------------------------------
-
         code_verifier = st.session_state.get(
             "teacher_recovery_code_verifier"
         )
-
-        # -------------------------------------------------
-        # Fallback to Supabase storage
-        # -------------------------------------------------
 
         if not code_verifier:
 
@@ -175,10 +155,6 @@ def check_teacher_recovery_session():
 
             return False
 
-        # -------------------------------------------------
-        # Exchange recovery code for authenticated session
-        # -------------------------------------------------
-
         response = (
             supabase.auth.exchange_code_for_session(
                 {
@@ -188,17 +164,8 @@ def check_teacher_recovery_session():
             )
         )
 
-        # -------------------------------------------------
-        # Make sure exchange was successful
-        # -------------------------------------------------
-
         if not response or not response.session:
-
             return False
-
-        # -------------------------------------------------
-        # Clear callback URL only after successful exchange
-        # -------------------------------------------------
 
         st.query_params.clear()
 
@@ -207,14 +174,9 @@ def check_teacher_recovery_session():
             None
         )
 
-        # -------------------------------------------------
-        # Get authenticated session
-        # -------------------------------------------------
-
         session = supabase.auth.get_session()
 
         if not session:
-
             return False
 
         user = getattr(
@@ -224,7 +186,6 @@ def check_teacher_recovery_session():
         )
 
         if not user:
-
             return False
 
         user_id = getattr(
@@ -234,12 +195,7 @@ def check_teacher_recovery_session():
         )
 
         if not user_id:
-
             return False
-
-        # -------------------------------------------------
-        # Find matching teacher
-        # -------------------------------------------------
 
         teacher = (
             supabase
@@ -253,7 +209,6 @@ def check_teacher_recovery_session():
         )
 
         if not teacher.data:
-
             return False
 
         st.session_state[
@@ -278,6 +233,7 @@ def check_teacher_recovery_session():
 def teacher_screen():
 
     style_background_dashboard()
+
     style_base_layout()
 
     if "teacher_data" in st.session_state:
@@ -332,6 +288,23 @@ def teacher_screen():
 def teacher_dashboard():
 
     teacher_data = st.session_state.teacher_data
+
+    # =====================================================
+    # PENDING VOICE ATTENDANCE RESULT
+    # =====================================================
+
+    pending_voice = st.session_state.get(
+        "voice_attendance_pending"
+    )
+
+    if pending_voice is not None:
+
+        attendance_result_dialog(
+            pending_voice["df"],
+            pending_voice["logs"]
+        )
+
+        return
 
     c1, c2 = st.columns(
         2,
@@ -871,12 +844,28 @@ def teacher_tab_manage_subjects():
     if not subjects:
 
         st.info(
-            "No subjects found. Create one above."
+            "No subjects found. Create a subject above."
         )
 
         return
 
+    # -----------------------------------------------------
+    # SUBJECT CARDS
+    # -----------------------------------------------------
+
+    rendered_subject_ids = set()
+
     for sub in subjects:
+
+        subject_id = sub["subject_id"]
+
+        # Prevent duplicate rendering of the same subject
+        if subject_id in rendered_subject_ids:
+            continue
+
+        rendered_subject_ids.add(
+            subject_id
+        )
 
         stats = [
             (
@@ -897,14 +886,25 @@ def teacher_tab_manage_subjects():
             )
         ]
 
+        # -------------------------------------------------
+        # STABLE UNIQUE SHARE BUTTON KEY
+        # -------------------------------------------------
+
+        share_button_key = (
+            f"teacher_manage_subject_share_"
+            f"{teacher_id}_"
+            f"{subject_id}"
+        )
+
         def share_btn(
             subject_name=sub["name"],
-            subject_code=sub["subject_code"]
+            subject_code=sub["subject_code"],
+            button_key=share_button_key
         ):
 
             if st.button(
                 f"Share Code: {subject_name}",
-                key=f"share_{subject_code}",
+                key=button_key,
                 icon=":material/share:"
             ):
 
@@ -1624,9 +1624,9 @@ def register_teacher(
 
         create_teacher(
             teacher_username,
-            teacher_password,
             teacher_name,
-            teacher_email
+            teacher_email,
+            teacher_password
         )
 
         return (
