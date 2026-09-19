@@ -340,6 +340,18 @@ def style_base_layout():
                 opacity: 1 !important;
             }
 
+            .stTextInput label,
+            .stNumberInput label,
+            .stTextArea label {
+                color: #111827 !important;
+            }
+
+            .stTextInput label p,
+            .stNumberInput label p,
+            .stTextArea label p {
+                color: #111827 !important;
+            }
+
             .stTextInput input:focus,
             .stNumberInput input:focus,
             .stTextArea textarea:focus {
