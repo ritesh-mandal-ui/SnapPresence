@@ -1,46 +1,22 @@
-from pathlib import Path
-
 import streamlit as st
 
 
-def get_logo_path():
-
-    current_dir = Path(__file__).parent
-
-    image_path = (
-        current_dir.parent
-        / "assets"
-        / "footer_logo.png"
-    )
-
-    if image_path.exists():
-        return str(image_path)
-
-    return None
-
-
 def footer_home():
-
-    logo_path = get_logo_path()
 
     st.markdown(
         """
         <style>
 
-        [data-testid="stImage"] img {
-            border-radius: 0 !important;
-        }
-
         .st-key-home-footer {
             position: fixed !important;
             left: 0 !important;
             right: 0 !important;
-            bottom: 0 !important;
+            bottom: 6px !important;
             width: 100% !important;
             z-index: 999 !important;
             background: rgba(247, 248, 252, 0.94) !important;
             backdrop-filter: blur(10px) !important;
-            padding: 6px 0 8px 0 !important;
+            padding: 7px 12px 9px 12px !important;
             margin: 0 !important;
             border-top: 1px solid #e5e7eb !important;
         }
@@ -54,30 +30,61 @@ def footer_home():
             padding: 0 !important;
         }
 
-        .st-key-home-footer [data-testid="stImage"] {
-            display: flex !important;
-            justify-content: flex-start !important;
-            align-items: center !important;
-            margin: 0 !important;
-        }
-
         .st-key-home-footer [data-testid="stMarkdownContainer"] {
             display: flex !important;
-            justify-content: flex-end !important;
+            justify-content: center !important;
             align-items: center !important;
-            height: 100% !important;
-            white-space: nowrap !important;
+            width: 100% !important;
+        }
+
+        .sp-footer-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            width: 100%;
+            white-space: nowrap;
+            font-size: 13px;
+            line-height: 1.2;
+        }
+
+        .sp-footer-created {
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .sp-footer-name {
+            color: #111827;
+            font-weight: 700;
+            letter-spacing: 0.7px;
+            transition:
+                letter-spacing 0.2s ease,
+                transform 0.2s ease;
+        }
+
+        .sp-footer-name:hover {
+            letter-spacing: 1px;
+            transform: translateY(-1px);
         }
 
         @media (max-width: 768px) {
 
             .st-key-home-footer {
-                padding: 5px 8px 7px 8px !important;
+                padding: 6px 8px 8px 8px !important;
             }
 
-            .st-key-home-footer [data-testid="stHorizontalBlock"] {
-                width: fit-content !important;
-                margin: 0 auto !important;
+            .sp-footer-content {
+                font-size: 12px;
+                gap: 6px;
+            }
+
+        }
+
+        @media (max-width: 380px) {
+
+            .sp-footer-content {
+                font-size: 11px;
+                gap: 5px;
             }
 
         }
@@ -89,82 +96,92 @@ def footer_home():
 
     with st.container(key="home-footer"):
 
-        col1, col2, col3 = st.columns(
-            [1, 1.8, 1],
-            vertical_alignment="center"
+        st.markdown(
+            """
+            <div class="sp-footer-content">
+                <span class="sp-footer-created">Created with ❤️ by</span>
+                <span class="sp-footer-name">RITESH MANDAL</span>
+            </div>
+            """,
+            unsafe_allow_html=True
         )
-
-        with col2:
-
-            footer_col1, footer_col2 = st.columns(
-                [1.2, 1],
-                gap="small",
-                vertical_alignment="center"
-            )
-
-            with footer_col1:
-
-                st.markdown(
-                    "Created with ❤️ by",
-                    text_alignment="right"
-                )
-
-            with footer_col2:
-
-                if logo_path:
-
-                    st.image(
-                        logo_path,
-                        width=105
-                    )
-
-                else:
-
-                    st.write("RITESH MANDAL")
 
 
 def footer_dashboard():
-
-    logo_path = get_logo_path()
 
     st.markdown(
         """
         <style>
 
-        [data-testid="stImage"] img {
-            border-radius: 0 !important;
+        .sp-dashboard-footer {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 12px 12px 12px;
+            margin-top: 20px;
         }
 
-        .st-key-home-footer [data-testid="stHorizontalBlock"] {
-            gap: 0 !important;
+        .sp-dashboard-footer-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            width: 100%;
+            white-space: nowrap;
+            font-size: 13px;
+            line-height: 1.2;
+        }
+
+        .sp-dashboard-footer-created {
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .sp-dashboard-footer-name {
+            color: #111827;
+            font-weight: 700;
+            letter-spacing: 0.7px;
+            transition:
+                letter-spacing 0.2s ease,
+                transform 0.2s ease;
+        }
+
+        .sp-dashboard-footer-name:hover {
+            letter-spacing: 1px;
+            transform: translateY(-1px);
+        }
+
+        @media (max-width: 768px) {
+
+            .sp-dashboard-footer {
+                padding: 8px 8px 12px 8px;
+            }
+
+            .sp-dashboard-footer-content {
+                font-size: 12px;
+                gap: 6px;
+            }
+
+        }
+
+        @media (max-width: 380px) {
+
+            .sp-dashboard-footer-content {
+                font-size: 11px;
+                gap: 5px;
+            }
+
         }
 
         </style>
+
+        <div class="sp-dashboard-footer">
+            <div class="sp-dashboard-footer-content">
+                <span class="sp-dashboard-footer-created">Created with ❤️ by</span>
+                <span class="sp-dashboard-footer-name">RITESH MANDAL</span>
+            </div>
+        </div>
         """,
         unsafe_allow_html=True
     )
-
-    col1, col2 = st.columns(
-        [1, 1],
-        vertical_alignment="center"
-    )
-
-    with col1:
-
-        st.markdown(
-            "Created with ❤️ by",
-            text_alignment="right"
-        )
-
-    with col2:
-
-        if logo_path:
-
-            st.image(
-                logo_path,
-                width=105
-            )
-
-        else:
-
-            st.write("RITESH MANDAL")
