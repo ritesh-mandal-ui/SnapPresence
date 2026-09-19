@@ -450,7 +450,8 @@ def student_screen():
         st.write("")
 
         photo_source = st.camera_input(
-            "Position your face in the center"
+            "Position your face in the center",
+            key="student_face_camera"
         )
 
     show_registration = False
