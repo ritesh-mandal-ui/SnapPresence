@@ -325,10 +325,19 @@ def style_base_layout():
                 background: #ffffff !important;
                 border: 1px solid var(--sp-border) !important;
                 border-radius: 11px !important;
-                color: var(--sp-text) !important;
+                color: #111827 !important;
+                -webkit-text-fill-color: #111827 !important;
                 transition:
                     border-color 0.18s ease,
                     box-shadow 0.18s ease !important;
+            }
+
+            .stTextInput input::placeholder,
+            .stNumberInput input::placeholder,
+            .stTextArea textarea::placeholder {
+                color: #6b7280 !important;
+                -webkit-text-fill-color: #6b7280 !important;
+                opacity: 1 !important;
             }
 
             .stTextInput input:focus,
