@@ -65,6 +65,7 @@ def subject_card(
                 html += f"""
                     <div style="
                         background:#EB459E10;
+                        color:#1e293b;
                         padding:5px 12px;
                         border-radius:12px;
                         font-size:0.9rem;
