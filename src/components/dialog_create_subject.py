@@ -1,5 +1,6 @@
 import streamlit as st
 
+from src.database.config import supabase
 from src.database.db import create_subject
 
 
@@ -39,7 +40,37 @@ def create_subject_dialog(teacher_id):
 
             return
 
+        subject_code = subject_code.strip()
+
         try:
+
+            # =================================================
+            # CHECK DUPLICATE SUBJECT CODE
+            # =================================================
+
+            existing_subject = (
+                supabase
+                .table("subjects")
+                .select("subject_id")
+                .eq(
+                    "subject_code",
+                    subject_code
+                )
+                .execute()
+            )
+
+            if existing_subject.data:
+
+                st.warning(
+                    "This subject code already exists. "
+                    "Please use another subject code."
+                )
+
+                return
+
+            # =================================================
+            # CREATE SUBJECT
+            # =================================================
 
             create_subject(
                 subject_code,

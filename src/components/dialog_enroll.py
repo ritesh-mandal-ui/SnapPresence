@@ -103,4 +103,5 @@ def enroll_dialog():
         )
 
         time.sleep(1)
+
         st.rerun()

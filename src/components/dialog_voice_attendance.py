@@ -1,8 +1,5 @@
-
 import streamlit as st
 import pandas as pd
-
-from datetime import datetime
 
 from src.pipelines.voice_pipeline import (
     process_bulk_audio,
@@ -10,10 +7,6 @@ from src.pipelines.voice_pipeline import (
 )
 
 from src.database.config import supabase
-
-from src.components.dialog_attendance_results import (
-    show_attendance_result
-)
 
 
 @st.dialog("Voice Attendance")
@@ -29,8 +22,15 @@ def voice_attendance_dialog(selected_subject_id):
         "while the teacher records the classroom audio."
     )
 
+    voice_recording_key = (
+        f"teacher_voice_recording_"
+        f"{selected_subject_id}_"
+        f"{st.session_state.get('voice_recording_version', 0)}"
+    )
+
     audio_data = st.audio_input(
-        "Record classroom audio"
+        "Record classroom audio",
+        key=voice_recording_key
     )
 
     if st.button(
@@ -40,23 +40,39 @@ def voice_attendance_dialog(selected_subject_id):
     ):
 
         if audio_data is None:
-            st.warning("Please record classroom audio first.")
+
+            st.warning(
+                "Please record classroom audio first."
+            )
+
             return
 
-        with st.spinner("AI is analyzing classroom voices..."):
+        with st.spinner(
+            "AI is analyzing classroom voices..."
+        ):
 
             enrolled_res = (
                 supabase
                 .table("subject_students")
                 .select("*, students(*)")
-                .eq("subject_id", selected_subject_id)
+                .eq(
+                    "subject_id",
+                    selected_subject_id
+                )
                 .execute()
             )
 
-            enrolled_students = enrolled_res.data or []
+            enrolled_students = (
+                enrolled_res.data
+                or []
+            )
 
             if not enrolled_students:
-                st.warning("Students need to enroll first.")
+
+                st.warning(
+                    "Students need to enroll first."
+                )
+
                 return
 
             candidates_dict = {}
@@ -68,24 +84,40 @@ def voice_attendance_dialog(selected_subject_id):
                 if not student:
                     continue
 
-                student_id = student.get("student_id")
-                voice_embedding = student.get("voice_embedding")
+                student_id = student.get(
+                    "student_id"
+                )
 
-                if student_id is not None and voice_embedding:
-                    candidates_dict[int(student_id)] = voice_embedding
+                voice_embedding = student.get(
+                    "voice_embedding"
+                )
+
+                if (
+                    student_id is not None
+                    and voice_embedding
+                ):
+
+                    candidates_dict[
+                        int(student_id)
+                    ] = voice_embedding
 
             if not candidates_dict:
+
                 st.error(
-                    "No enrolled students have voice profiles registered."
+                    "No enrolled students have "
+                    "voice profiles registered."
                 )
+
                 return
 
             audio_bytes = audio_data.read()
 
             if not audio_bytes:
+
                 st.warning(
                     "Recorded audio could not be read."
                 )
+
                 return
 
             detected_scores = process_bulk_audio(
@@ -97,10 +129,6 @@ def voice_attendance_dialog(selected_subject_id):
             results = []
             attendance_to_log = []
 
-            current_timestamp = datetime.now().strftime(
-                "%Y-%m-%dT%H:%M:%S"
-            )
-
             for node in enrolled_students:
 
                 student = node.get("students")
@@ -108,7 +136,9 @@ def voice_attendance_dialog(selected_subject_id):
                 if not student:
                     continue
 
-                student_id = int(student["student_id"])
+                student_id = int(
+                    student["student_id"]
+                )
 
                 score = detected_scores.get(
                     student_id,
@@ -136,23 +166,32 @@ def voice_attendance_dialog(selected_subject_id):
 
                 attendance_to_log.append({
                     "student_id": student_id,
-                    "subject_id": selected_subject_id,
-                    "timestamp": current_timestamp,
+                    "subject_id": int(
+                        selected_subject_id
+                    ),
                     "is_present": is_present
                 })
 
             if not results:
+
                 st.warning(
                     "No valid enrolled students were found."
                 )
+
                 return
 
-            # IMPORTANT:
-            # Do NOT call attendance_result_dialog() here.
-            # voice_attendance_dialog() is already a dialog,
-            # so opening another dialog would create a nested dialog.
-            show_attendance_result(
-                pd.DataFrame(results),
-                attendance_to_log
-            )
+            st.session_state[
+                "voice_attendance_pending"
+            ] = {
+                "df": pd.DataFrame(results),
+                "logs": attendance_to_log
+            }
 
+            st.session_state[
+                "voice_recording_version"
+            ] = st.session_state.get(
+                "voice_recording_version",
+                0
+            ) + 1
+
+            st.rerun(scope="app")

@@ -1,5 +1,8 @@
+
 import time
 import bcrypt
+
+from datetime import datetime, timedelta, timezone
 
 from src.database.config import supabase
 
@@ -195,6 +198,7 @@ def get_teacher_subjects(teacher_id):
             subjects = response.data
 
             for subject in subjects:
+
                 subject_students = subject.get(
                     "subject_students"
                 )
@@ -306,10 +310,100 @@ def create_attendance(logs):
     if not logs:
         return []
 
+    allowed_logs = []
+
+    # India calendar day (IST)
+    IST = timezone(
+        timedelta(hours=5, minutes=30)
+    )
+
+    now_ist = datetime.now(IST)
+
+    start_ist = now_ist.replace(
+        hour=0,
+        minute=0,
+        second=0,
+        microsecond=0
+    )
+
+    end_ist = start_ist + timedelta(
+        days=1
+    )
+
+    # Convert IST boundaries to UTC
+    start_utc = start_ist.astimezone(
+        timezone.utc
+    ).isoformat()
+
+    end_utc = end_ist.astimezone(
+        timezone.utc
+    ).isoformat()
+
+    # Prevent duplicate entries
+    # inside the same request
+    already_added = set()
+
+    for log in logs:
+
+        student_id = log.get(
+            "student_id"
+        )
+
+        subject_id = log.get(
+            "subject_id"
+        )
+
+        if (
+            student_id is None
+            or subject_id is None
+        ):
+            continue
+
+        key = (
+            int(student_id),
+            int(subject_id)
+        )
+
+        if key in already_added:
+            continue
+
+        existing = (
+            supabase
+            .table("attendance_logs")
+            .select("timestamp")
+            .eq(
+                "student_id",
+                int(student_id)
+            )
+            .eq(
+                "subject_id",
+                int(subject_id)
+            )
+            .gte(
+                "timestamp",
+                start_utc
+            )
+            .lt(
+                "timestamp",
+                end_utc
+            )
+            .execute()
+        )
+
+        if existing.data:
+            continue
+
+        allowed_logs.append(log)
+
+        already_added.add(key)
+
+    if not allowed_logs:
+        return []
+
     response = (
         supabase
         .table("attendance_logs")
-        .insert(logs)
+        .insert(allowed_logs)
         .execute()
     )
 
@@ -331,7 +425,6 @@ def get_student_attendance(student_id):
     return response.data
 
 
-
 def get_attendance_for_teacher(teacher_id):
     response = (
         supabase
@@ -347,6 +440,8 @@ def get_attendance_for_teacher(teacher_id):
     )
 
     return response.data
+
+
 def get_teacher_by_email(email):
     response = (
         supabase
@@ -362,7 +457,10 @@ def get_teacher_by_email(email):
     return response.data[0]
 
 
-def update_teacher_password(teacher_id, new_password):
+def update_teacher_password(
+    teacher_id,
+    new_password
+):
     response = (
         supabase
         .table("teachers")
@@ -377,3 +475,4 @@ def update_teacher_password(teacher_id, new_password):
     )
 
     return response.data
+

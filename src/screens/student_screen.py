@@ -14,6 +14,9 @@ from src.components.header import header_dashboard
 from src.components.footer import footer_dashboard
 from src.components.dialog_enroll import enroll_dialog
 from src.components.subject_card import subject_card
+from src.components.dialog_student_voice_attendance import (
+    student_voice_attendance_dialog
+)
 
 from src.pipelines.face_pipeline import (
     get_face_embeddings,
@@ -136,10 +139,6 @@ def student_dashboard():
 
     student_id = student_data["student_id"]
 
-    # -----------------------------------------------------
-    # HEADER
-    # -----------------------------------------------------
-
     c1, c2 = st.columns(
         2,
         vertical_alignment="center",
@@ -164,6 +163,7 @@ def student_dashboard():
         ):
 
             st.session_state["is_logged_in"] = False
+
             st.session_state["user_role"] = None
 
             st.session_state.pop(
@@ -175,11 +175,7 @@ def student_dashboard():
 
     st.space()
 
-    # -----------------------------------------------------
-    # SUBJECT HEADER
-    # -----------------------------------------------------
-
-    c1, c2 = st.columns(2)
+    c1, c2, c3 = st.columns(3)
 
     with c1:
 
@@ -190,6 +186,17 @@ def student_dashboard():
     with c2:
 
         if st.button(
+            "➕ Enroll in Subject",
+            type="primary",
+            width="stretch",
+            key="student_enroll_subject"
+        ):
+
+            enroll_dialog()
+
+    with c3:
+
+        if st.button(
             "🎙️ Add / Update Voice Profile",
             type="primary",
             width="stretch"
@@ -198,10 +205,6 @@ def student_dashboard():
             voice_profile_dialog()
 
     st.divider()
-
-    # -----------------------------------------------------
-    # LOAD DATA
-    # -----------------------------------------------------
 
     with st.spinner(
         "Loading your enrolled subjects..."
@@ -215,9 +218,9 @@ def student_dashboard():
             student_id
         )
 
-    # -----------------------------------------------------
-    # ATTENDANCE STATISTICS
-    # -----------------------------------------------------
+    # =====================================================
+    # ATTENDANCE STATS
+    # =====================================================
 
     stats_map = {}
 
@@ -238,25 +241,24 @@ def student_dashboard():
 
             stats_map[subject_id]["attended"] += 1
 
-    # -----------------------------------------------------
-    # NO SUBJECTS
-    # -----------------------------------------------------
-
     if not subjects:
 
         st.info(
             "You are not enrolled in any subjects yet."
         )
 
-    # -----------------------------------------------------
-    # SUBJECT CARDS
-    # -----------------------------------------------------
+    # =====================================================
+    # SUBJECT CARDS + VOICE ATTENDANCE
+    # =====================================================
 
     cols = st.columns(2)
 
     for index, subject_node in enumerate(subjects):
 
         subject = subject_node["subjects"]
+
+        if not subject:
+            continue
 
         subject_id = subject["subject_id"]
 
@@ -268,31 +270,11 @@ def student_dashboard():
             }
         )
 
-        def unenroll_button(
-            sid=subject_id,
-            subject_name=subject["name"]
-        ):
-
-            if st.button(
-                "Unenroll from this course",
-                type="tertiary",
-                width="stretch",
-                icon=":material/delete_forever:",
-                key=f"unenroll_{sid}"
-            ):
-
-                unenroll_student_to_subject(
-                    student_id,
-                    sid
-                )
-
-                st.toast(
-                    f"Unenrolled from {subject_name} successfully!"
-                )
-
-                st.rerun()
-
         with cols[index % 2]:
+
+            # ---------------------------------------------
+            # SUBJECT CARD
+            # ---------------------------------------------
 
             subject_card(
                 name=subject["name"],
@@ -309,9 +291,56 @@ def student_dashboard():
                         "Attended",
                         stats["attended"]
                     )
-                ],
-                footer_callback=unenroll_button
+                ]
             )
+
+            # ---------------------------------------------
+            # UNENROLL BUTTON
+            # ---------------------------------------------
+
+            if st.button(
+                "Unenroll from this course",
+                type="tertiary",
+                width="stretch",
+                icon=":material/delete_forever:",
+                key=f"unenroll_{student_id}_{subject_id}"
+            ):
+
+                unenroll_student_to_subject(
+                    student_id,
+                    subject_id
+                )
+
+                st.toast(
+                    f"Unenrolled from {subject['name']} successfully!"
+                )
+
+                st.rerun()
+
+            # ---------------------------------------------
+            # VOICE ATTENDANCE
+            # ---------------------------------------------
+
+            voice_button_key = (
+                f"student_voice_attendance_"
+                f"{student_id}_"
+                f"{subject_id}"
+            )
+
+            voice_button_clicked = st.button(
+                "🎙️ Voice Attendance",
+                type="primary",
+                width="stretch",
+                key=voice_button_key
+            )
+
+            if voice_button_clicked:
+
+                student_voice_attendance_dialog(
+                    student_id,
+                    subject_id,
+                    subject["name"]
+                )
 
     footer_dashboard()
 
@@ -326,19 +355,11 @@ def student_screen():
 
     style_base_layout()
 
-    # =====================================================
-    # ALREADY LOGGED IN
-    # =====================================================
-
     if "student_data" in st.session_state:
 
         student_dashboard()
 
         return
-
-    # =====================================================
-    # LOGIN HEADER
-    # =====================================================
 
     c1, c2 = st.columns(
         2,
@@ -363,10 +384,6 @@ def student_screen():
 
             st.rerun()
 
-    # =====================================================
-    # LOGIN TITLE
-    # =====================================================
-
     st.header(
         "Login using FaceID",
         text_alignment="center"
@@ -375,19 +392,11 @@ def student_screen():
     st.space()
     st.space()
 
-    # =====================================================
-    # CAMERA
-    # =====================================================
-
     photo_source = st.camera_input(
         "Position your face in the center"
     )
 
     show_registration = False
-
-    # =====================================================
-    # FACE LOGIN
-    # =====================================================
 
     if photo_source:
 
@@ -401,24 +410,14 @@ def student_screen():
             "AI is scanning..."
         ):
 
-            # -------------------------------------------------
-            # CREATE FACE EMBEDDINGS FROM CAMERA IMAGE
-            # -------------------------------------------------
-
             encodings = get_face_embeddings(
                 image
             )
 
-            num_faces = len(
-                encodings
-            )
+            num_faces = len(encodings)
 
             best_student_id = None
             best_distance = None
-
-            # -------------------------------------------------
-            # ONLY TRY MATCH WHEN EXACTLY ONE FACE EXISTS
-            # -------------------------------------------------
 
             if num_faces == 1:
 
@@ -434,10 +433,6 @@ def student_screen():
                         model_data["X"],
                         model_data["y"]
                     )
-
-        # -------------------------------------------------
-        # FACE DIAGNOSTIC
-        # -------------------------------------------------
 
         with st.expander(
             "Face Recognition Diagnostic"
@@ -475,10 +470,6 @@ def student_screen():
                     "N/A"
                 )
 
-        # -------------------------------------------------
-        # NO FACE
-        # -------------------------------------------------
-
         if num_faces == 0:
 
             st.warning(
@@ -486,10 +477,6 @@ def student_screen():
                 "Please position your face clearly "
                 "inside the camera frame."
             )
-
-        # -------------------------------------------------
-        # MULTIPLE FACES
-        # -------------------------------------------------
 
         elif num_faces > 1:
 
@@ -499,15 +486,7 @@ def student_screen():
                 "is visible."
             )
 
-        # -------------------------------------------------
-        # FACE FOUND
-        # -------------------------------------------------
-
         else:
-
-            # -------------------------------------------------
-            # MATCH FOUND
-            # -------------------------------------------------
 
             if (
                 best_student_id is not None
@@ -557,10 +536,6 @@ def student_screen():
                         "profile was not found."
                     )
 
-            # -------------------------------------------------
-            # FACE NOT RECOGNIZED
-            # -------------------------------------------------
-
             else:
 
                 st.info(
@@ -569,10 +544,6 @@ def student_screen():
                 )
 
                 show_registration = True
-
-    # =====================================================
-    # NEW STUDENT REGISTRATION
-    # =====================================================
 
     if show_registration:
 
@@ -668,7 +639,6 @@ def student_screen():
 
                     if response_data:
 
-                        # Refresh cached face database
                         clear_face_model_cache()
 
                         st.session_state[
@@ -725,9 +695,7 @@ def find_best_face_match(
     )
 
     best_index = int(
-        np.argmin(
-            distances
-        )
+        np.argmin(distances)
     )
 
     best_distance = float(

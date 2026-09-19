@@ -17,6 +17,7 @@ from src.components.header import header_dashboard
 from src.components.footer import footer_dashboard
 from src.components.subject_card import subject_card
 from src.components.dialog_create_subject import create_subject_dialog
+from src.components.dialog_remove_subject import remove_subject_dialog
 from src.components.dialog_share_subject import share_subject_dialog
 from src.components.dialog_add_photo import add_photos_dialog
 from src.components.dialog_attendance_results import attendance_result_dialog
@@ -848,6 +849,20 @@ def teacher_tab_manage_subjects():
         )
 
         return
+
+    # -----------------------------------------------------
+    # REMOVE SUBJECT
+    # -----------------------------------------------------
+
+    if st.button(
+        "Remove Subject",
+        icon=":material/delete:",
+        key="teacher_remove_subject"
+    ):
+
+        remove_subject_dialog(
+            subjects
+        )
 
     # -----------------------------------------------------
     # SUBJECT CARDS
