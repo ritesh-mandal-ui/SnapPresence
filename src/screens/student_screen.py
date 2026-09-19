@@ -39,10 +39,6 @@ from src.database.db import (
 )
 
 
-# =========================================================
-# VOICE PROFILE DIALOG
-# =========================================================
-
 @st.dialog("Voice Profile")
 def voice_profile_dialog():
 
@@ -129,10 +125,6 @@ def voice_profile_dialog():
         st.rerun()
 
 
-# =========================================================
-# STUDENT DASHBOARD
-# =========================================================
-
 def student_dashboard():
 
     student_data = st.session_state.student_data
@@ -140,9 +132,9 @@ def student_dashboard():
     student_id = student_data["student_id"]
 
     c1, c2 = st.columns(
-        2,
+        [2.2, 1],
         vertical_alignment="center",
-        gap="xxlarge"
+        gap="large"
     )
 
     with c1:
@@ -151,60 +143,88 @@ def student_dashboard():
 
     with c2:
 
-        st.subheader(
-            f"Welcome, {student_data['name']}"
-        )
-
-        if st.button(
-            "Logout",
-            type="secondary",
-            key="student_logout",
-            shortcut="control+backspace"
+        with st.container(
+            border=True
         ):
 
-            st.session_state["is_logged_in"] = False
-
-            st.session_state["user_role"] = None
-
-            st.session_state.pop(
-                "student_data",
-                None
+            st.caption(
+                "STUDENT PORTAL"
             )
 
-            st.rerun()
+            st.subheader(
+                f"Welcome, {student_data['name']}"
+            )
 
-    st.space()
+            st.caption(
+                "Manage your subjects and attendance."
+            )
 
-    c1, c2, c3 = st.columns(3)
+            if st.button(
+                "Logout",
+                type="secondary",
+                key="student_logout",
+                shortcut="control+backspace",
+                width="stretch",
+                icon=":material/logout:"
+            ):
 
-    with c1:
+                st.session_state["is_logged_in"] = False
 
-        st.header(
-            "Your Enrolled Subjects"
+                st.session_state["user_role"] = None
+
+                st.session_state.pop(
+                    "student_data",
+                    None
+                )
+
+                st.rerun()
+
+    st.write("")
+
+    with st.container(
+        border=True
+    ):
+
+        c1, c2, c3 = st.columns(
+            [2, 1, 1],
+            vertical_alignment="center",
+            gap="medium"
         )
 
-    with c2:
+        with c1:
 
-        if st.button(
-            "➕ Enroll in Subject",
-            type="primary",
-            width="stretch",
-            key="student_enroll_subject"
-        ):
+            st.subheader(
+                "Your Enrolled Subjects"
+            )
 
-            enroll_dialog()
+            st.caption(
+                "Track your attendance and mark your presence using voice."
+            )
 
-    with c3:
+        with c2:
 
-        if st.button(
-            "🎙️ Add / Update Voice Profile",
-            type="primary",
-            width="stretch"
-        ):
+            if st.button(
+                "Enroll in Subject",
+                type="primary",
+                width="stretch",
+                key="student_enroll_subject",
+                icon=":material/add:"
+            ):
 
-            voice_profile_dialog()
+                enroll_dialog()
 
-    st.divider()
+        with c3:
+
+            if st.button(
+                "Voice Profile",
+                type="secondary",
+                width="stretch",
+                icon=":material/mic:"
+            ):
+
+                voice_profile_dialog()
+
+    st.write("")
 
     with st.spinner(
         "Loading your enrolled subjects..."
@@ -217,10 +237,6 @@ def student_dashboard():
         logs = get_student_attendance(
             student_id
         )
-
-    # =====================================================
-    # ATTENDANCE STATS
-    # =====================================================
 
     stats_map = {}
 
@@ -243,15 +259,40 @@ def student_dashboard():
 
     if not subjects:
 
-        st.info(
-            "You are not enrolled in any subjects yet."
+        with st.container(
+            border=True
+        ):
+
+            st.subheader(
+                "No subjects enrolled yet"
+            )
+
+            st.caption(
+                "Your enrolled subjects will appear here. "
+                "Join a subject to start tracking attendance."
+            )
+
+            st.write("")
+
+            if st.button(
+                "Enroll in Subject",
+                type="primary",
+                key="student_empty_enroll",
+                icon=":material/add:"
+            ):
+
+                enroll_dialog()
+
+    else:
+
+        st.caption(
+            f"{len(subjects)} subject(s) enrolled"
         )
 
-    # =====================================================
-    # SUBJECT CARDS + VOICE ATTENDANCE
-    # =====================================================
-
-    cols = st.columns(2)
+    cols = st.columns(
+        2,
+        gap="large"
+    )
 
     for index, subject_node in enumerate(subjects):
 
@@ -272,82 +313,88 @@ def student_dashboard():
 
         with cols[index % 2]:
 
-            # ---------------------------------------------
-            # SUBJECT CARD
-            # ---------------------------------------------
-
-            subject_card(
-                name=subject["name"],
-                code=subject["subject_code"],
-                section=subject["section"],
-                stats=[
-                    (
-                        "📅",
-                        "Total",
-                        stats["total"]
-                    ),
-                    (
-                        "✅",
-                        "Attended",
-                        stats["attended"]
-                    )
-                ]
-            )
-
-            # ---------------------------------------------
-            # UNENROLL BUTTON
-            # ---------------------------------------------
-
-            if st.button(
-                "Unenroll from this course",
-                type="tertiary",
-                width="stretch",
-                icon=":material/delete_forever:",
-                key=f"unenroll_{student_id}_{subject_id}"
+            with st.container(
+                border=True
             ):
 
-                unenroll_student_to_subject(
-                    student_id,
-                    subject_id
-                )
-
-                st.toast(
-                    f"Unenrolled from {subject['name']} successfully!"
-                )
-
-                st.rerun()
-
-            # ---------------------------------------------
-            # VOICE ATTENDANCE
-            # ---------------------------------------------
-
-            voice_button_key = (
-                f"student_voice_attendance_"
-                f"{student_id}_"
-                f"{subject_id}"
-            )
-
-            voice_button_clicked = st.button(
-                "🎙️ Voice Attendance",
-                type="primary",
-                width="stretch",
-                key=voice_button_key
-            )
-
-            if voice_button_clicked:
-
-                student_voice_attendance_dialog(
-                    student_id,
-                    subject_id,
+                st.subheader(
                     subject["name"]
                 )
 
+                st.caption(
+                    f"{subject['subject_code']}  •  Section {subject['section']}"
+                )
+
+                st.write("")
+
+                subject_card(
+                    name=subject["name"],
+                    code=subject["subject_code"],
+                    section=subject["section"],
+                    stats=[
+                        (
+                            "📅",
+                            "Total",
+                            stats["total"]
+                        ),
+                        (
+                            "✅",
+                            "Attended",
+                            stats["attended"]
+                        )
+                    ]
+                )
+
+                st.write("")
+
+                action_col1, action_col2 = st.columns(
+                    2,
+                    gap="small"
+                )
+
+                with action_col1:
+
+                    if st.button(
+                        "Voice Attendance",
+                        type="primary",
+                        width="stretch",
+                        key=(
+                            f"student_voice_attendance_"
+                            f"{student_id}_"
+                            f"{subject_id}"
+                        ),
+                        icon=":material/mic:"
+                    ):
+
+                        student_voice_attendance_dialog(
+                            student_id,
+                            subject_id,
+                            subject["name"]
+                        )
+
+                with action_col2:
+
+                    if st.button(
+                        "Unenroll",
+                        type="tertiary",
+                        width="stretch",
+                        icon=":material/delete_forever:",
+                        key=f"unenroll_{student_id}_{subject_id}"
+                    ):
+
+                        unenroll_student_to_subject(
+                            student_id,
+                            subject_id
+                        )
+
+                        st.toast(
+                            f"Unenrolled from {subject['name']} successfully!"
+                        )
+
+                        st.rerun()
+
     footer_dashboard()
 
-
-# =========================================================
-# STUDENT SCREEN
-# =========================================================
 
 def student_screen():
 
@@ -362,9 +409,9 @@ def student_screen():
         return
 
     c1, c2 = st.columns(
-        2,
+        [2.2, 1],
         vertical_alignment="center",
-        gap="xxlarge"
+        gap="large"
     )
 
     with c1:
@@ -377,24 +424,34 @@ def student_screen():
             "Go back to Home",
             type="secondary",
             key="student_login_back",
-            shortcut="control+backspace"
+            shortcut="control+backspace",
+            width="stretch",
+            icon=":material/arrow_back:"
         ):
 
             st.session_state["login_type"] = None
 
             st.rerun()
 
-    st.header(
-        "Login using FaceID",
-        text_alignment="center"
-    )
+    st.write("")
 
-    st.space()
-    st.space()
+    with st.container(
+        border=True
+    ):
 
-    photo_source = st.camera_input(
-        "Position your face in the center"
-    )
+        st.title(
+            "Login using Face ID"
+        )
+
+        st.caption(
+            "Position your face inside the camera frame to securely access your student dashboard."
+        )
+
+        st.write("")
+
+        photo_source = st.camera_input(
+            "Position your face in the center"
+        )
 
     show_registration = False
 
@@ -551,8 +608,12 @@ def student_screen():
             border=True
         ):
 
-            st.header(
-                "Register New Profile"
+            st.title(
+                "Create Your Student Profile"
+            )
+
+            st.caption(
+                "Your face will be used for secure Face ID login."
             )
 
             new_name = st.text_input(
@@ -561,11 +622,11 @@ def student_screen():
             )
 
             st.subheader(
-                "Optional: Voice Enrollment"
+                "Optional Voice Enrollment"
             )
 
             st.info(
-                "Enroll your voice for voice-only attendance."
+                "Enroll your voice now to enable voice-only attendance."
             )
 
             audio_data = st.audio_input(
@@ -575,7 +636,8 @@ def student_screen():
 
             if st.button(
                 "Create Account",
-                type="primary"
+                type="primary",
+                icon=":material/person_add:"
             ):
 
                 if not new_name:
@@ -670,10 +732,6 @@ def student_screen():
 
     footer_dashboard()
 
-
-# =========================================================
-# HELPER
-# =========================================================
 
 def find_best_face_match(
     face_embedding,

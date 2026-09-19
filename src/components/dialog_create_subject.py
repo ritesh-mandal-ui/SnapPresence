@@ -7,29 +7,38 @@ from src.database.db import create_subject
 @st.dialog("Create New Subject")
 def create_subject_dialog(teacher_id):
 
-    st.write(
-        "Enter the details of the new subject."
+    st.subheader(
+        "Create a New Subject"
     )
+
+    st.caption(
+        "Add the subject details below to create a new class."
+    )
+
+    st.write("")
 
     subject_code = st.text_input(
         "Subject Code",
-        placeholder="CS101"
+        placeholder="e.g. CS101"
     )
 
     subject_name = st.text_input(
         "Subject Name",
-        placeholder="Introduction to Computer Science"
+        placeholder="e.g. Introduction to Computer Science"
     )
 
     section = st.text_input(
         "Section",
-        placeholder="A"
+        placeholder="e.g. A"
     )
 
+    st.write("")
+
     if st.button(
-        "Create Subject Now",
+        "Create Subject",
         type="primary",
-        width="stretch"
+        width="stretch",
+        icon=":material/add:"
     ):
 
         if not subject_code or not subject_name or not section:
@@ -43,10 +52,6 @@ def create_subject_dialog(teacher_id):
         subject_code = subject_code.strip()
 
         try:
-
-            # =================================================
-            # CHECK DUPLICATE SUBJECT CODE
-            # =================================================
 
             existing_subject = (
                 supabase
@@ -67,10 +72,6 @@ def create_subject_dialog(teacher_id):
                 )
 
                 return
-
-            # =================================================
-            # CREATE SUBJECT
-            # =================================================
 
             create_subject(
                 subject_code,

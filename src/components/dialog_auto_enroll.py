@@ -9,7 +9,11 @@ def auto_enroll(subject_code):
     student_data = st.session_state.get("student_data")
 
     if not student_data:
-        st.error("Student information not found.")
+
+        st.error(
+            "Student information not found."
+        )
+
         return
 
     student_id = student_data["student_id"]
@@ -23,12 +27,18 @@ def auto_enroll(subject_code):
     )
 
     if not response.data:
-        st.error("Subject Code not found!")
+
+        st.error(
+            "Subject code not found."
+        )
 
         if st.button(
             "Close",
-            width="stretch"
+            type="secondary",
+            width="stretch",
+            icon=":material/close:"
         ):
+
             st.query_params.clear()
             st.rerun()
 
@@ -47,41 +57,79 @@ def auto_enroll(subject_code):
     )
 
     if check.data:
-        st.info("You're already enrolled!")
+
+        st.subheader(
+            "Already Enrolled"
+        )
+
+        st.info(
+            f"You're already enrolled in **{subject['name']}**."
+        )
 
         if st.button(
             "Got it!",
-            width="stretch"
+            type="primary",
+            width="stretch",
+            icon=":material/check:"
         ):
+
             st.query_params.clear()
             st.rerun()
 
         return
 
-    st.header("Quick Enrollment")
-
-    st.write(
-        f"Would you like to enroll in "
-        f"**{subject['name']}**?"
+    st.subheader(
+        "Quick Enrollment"
     )
 
-    col1, col2 = st.columns(2)
+    st.caption(
+        "You've been invited to join a subject."
+    )
+
+    st.write("")
+
+    with st.container(
+        border=True
+    ):
+
+        st.subheader(
+            subject["name"]
+        )
+
+        st.caption(
+            f"Subject Code: {subject_code}"
+        )
+
+        st.write(
+            "Would you like to enroll in this subject?"
+        )
+
+    st.write("")
+
+    col1, col2 = st.columns(
+        2,
+        gap="small"
+    )
 
     with col1:
 
         if st.button(
-            "No thanks",
-            width="stretch"
+            "No, thanks",
+            type="secondary",
+            width="stretch",
+            icon=":material/close:"
         ):
+
             st.query_params.clear()
             st.rerun()
 
     with col2:
 
         if st.button(
-            "Yes, enroll now!",
+            "Yes, enroll",
             type="primary",
-            width="stretch"
+            width="stretch",
+            icon=":material/how_to_reg:"
         ):
 
             try:
@@ -92,18 +140,24 @@ def auto_enroll(subject_code):
                 )
 
                 if not result:
+
                     st.error(
                         "Could not enroll in this subject."
                     )
+
                     return
 
-                st.success("Joined successfully!")
+                st.success(
+                    "Joined successfully!"
+                )
 
-                # app.py handles the rest on the next run:
-                # sets student session state and clears query params
-                st.session_state["quick_enrollment_completed"] = True
+                st.session_state[
+                    "quick_enrollment_completed"
+                ] = True
 
-                st.rerun(scope="app")
+                st.rerun(
+                    scope="app"
+                )
 
             except Exception as error:
 

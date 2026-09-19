@@ -12,31 +12,48 @@ from src.database.config import supabase
 @st.dialog("Voice Attendance")
 def voice_attendance_dialog(selected_subject_id):
 
-    st.write(
-        "Record classroom audio while students say "
-        "'I am present'. AI will recognize registered voices."
+    st.subheader(
+        "Mark Attendance Using Voice"
     )
 
-    st.info(
-        "Students should speak one at a time and clearly "
-        "while the teacher records the classroom audio."
+    st.caption(
+        "Record classroom audio and let AI identify registered "
+        "student voices automatically."
     )
 
-    voice_recording_key = (
-        f"teacher_voice_recording_"
-        f"{selected_subject_id}_"
-        f"{st.session_state.get('voice_recording_version', 0)}"
-    )
+    st.write("")
 
-    audio_data = st.audio_input(
-        "Record classroom audio",
-        key=voice_recording_key
-    )
+    with st.container(
+        border=True
+    ):
+
+        st.subheader(
+            "🎙️ Record Classroom Audio"
+        )
+
+        st.caption(
+            "Students should speak one at a time and clearly "
+            "while the teacher records the classroom audio."
+        )
+
+        voice_recording_key = (
+            f"teacher_voice_recording_"
+            f"{selected_subject_id}_"
+            f"{st.session_state.get('voice_recording_version', 0)}"
+        )
+
+        audio_data = st.audio_input(
+            "Record classroom audio",
+            key=voice_recording_key
+        )
+
+    st.write("")
 
     if st.button(
         "Analyze Audio",
         width="stretch",
-        type="primary"
+        type="primary",
+        icon=":material/graphic_eq:"
     ):
 
         if audio_data is None:
@@ -79,7 +96,9 @@ def voice_attendance_dialog(selected_subject_id):
 
             for node in enrolled_students:
 
-                student = node.get("students")
+                student = node.get(
+                    "students"
+                )
 
                 if not student:
                     continue
@@ -131,7 +150,9 @@ def voice_attendance_dialog(selected_subject_id):
 
             for node in enrolled_students:
 
-                student = node.get("students")
+                student = node.get(
+                    "students"
+                )
 
                 if not student:
                     continue
@@ -194,4 +215,6 @@ def voice_attendance_dialog(selected_subject_id):
                 0
             ) + 1
 
-            st.rerun(scope="app")
+            st.rerun(
+                scope="app"
+            )

@@ -19,35 +19,47 @@ def student_voice_attendance_dialog(
     subject_name
 ):
 
-    st.write(
-        f"Record your voice to mark attendance "
-        f"for **{subject_name}**."
+    st.subheader(
+        "Mark Your Attendance"
     )
 
-    st.info(
-        "Please speak clearly for a few seconds "
-        "in a quiet environment."
+    st.caption(
+        f"Use your registered voice to mark attendance "
+        f"for {subject_name}."
     )
 
-    voice_dialog_key = st.session_state.get(
-        "voice_dialog_key",
-        0
-    )
+    st.write("")
 
-    audio_data = st.audio_input(
-        "Record your voice",
-        key=(
-            f"student_voice_input_"
-            f"{student_id}_"
-            f"{subject_id}_"
-            f"{voice_dialog_key}"
+    with st.container(
+        border=True
+    ):
+
+        st.write(
+            "🎙️ Record your voice"
         )
-    )
+
+        st.caption(
+            "Speak clearly for a few seconds in a quiet "
+            "environment for better verification accuracy."
+        )
+
+        audio_data = st.audio_input(
+            "Record your voice",
+            key=(
+                f"student_voice_input_"
+                f"{student_id}_"
+                f"{subject_id}_"
+                f"{st.session_state.get('voice_dialog_key', 0)}"
+            )
+        )
+
+    st.write("")
 
     if st.button(
         "Verify & Mark Attendance",
         type="primary",
-        width="stretch"
+        width="stretch",
+        icon=":material/how_to_reg:"
     ):
 
         if audio_data is None:
@@ -122,7 +134,7 @@ def student_voice_attendance_dialog(
                     "Your voice could not be matched."
                 )
 
-                st.write(
+                st.caption(
                     f"Voice similarity: {score:.3f}"
                 )
 
@@ -141,28 +153,37 @@ def student_voice_attendance_dialog(
             if not saved_attendance:
 
                 st.warning(
-                    "⚠️ Attendance already marked for today."
+                    "Attendance already marked for today."
                 )
 
                 st.session_state["voice_dialog_key"] = (
-                    voice_dialog_key + 1
+                    st.session_state.get(
+                        "voice_dialog_key",
+                        0
+                    ) + 1
                 )
 
-                st.rerun(scope="app")
+                st.rerun(
+                    scope="app"
+                )
 
                 return
 
             st.success(
-                "✅ Voice verified! "
-                "Attendance marked successfully."
+                "Voice verified! Attendance marked successfully."
             )
 
-            st.write(
+            st.caption(
                 f"Voice similarity: {score:.3f}"
             )
 
             st.session_state["voice_dialog_key"] = (
-                voice_dialog_key + 1
+                st.session_state.get(
+                    "voice_dialog_key",
+                    0
+                ) + 1
             )
 
-            st.rerun(scope="app")
+            st.rerun(
+                scope="app"
+            )

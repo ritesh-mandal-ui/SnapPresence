@@ -9,20 +9,35 @@ from src.database.db import enroll_student_to_subject
 @st.dialog("Enroll in Subject")
 def enroll_dialog():
 
-    st.write(
-        "Enter the subject code provided by your teacher "
-        "to enroll."
+    st.subheader(
+        "Join a Subject"
     )
+
+    st.caption(
+        "Enter the subject code provided by your teacher "
+        "to join the class."
+    )
+
+    st.write("")
 
     join_code = st.text_input(
         "Subject Code",
-        placeholder="Eg. CS101"
+        placeholder="e.g. CS101",
+        key="student_subject_code"
     )
 
+    st.caption(
+        "You can find the subject code in your teacher's "
+        "subject details."
+    )
+
+    st.write("")
+
     if st.button(
-        "Enroll now",
+        "Enroll Now",
         type="primary",
-        width="stretch"
+        width="stretch",
+        icon=":material/how_to_reg:"
     ):
 
         if not join_code:

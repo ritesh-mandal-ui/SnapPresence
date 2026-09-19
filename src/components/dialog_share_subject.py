@@ -1,4 +1,3 @@
-
 import io
 
 import segno
@@ -19,7 +18,15 @@ def share_subject_dialog(
         f"{app_domain}/?join-code={subject_code}"
     )
 
-    st.header("Scan to Join")
+    st.subheader(
+        "Share Your Class"
+    )
+
+    st.caption(
+        f"Invite students to join {subject_name}."
+    )
+
+    st.write("")
 
     qr = segno.make(
         join_url
@@ -34,33 +41,59 @@ def share_subject_dialog(
         border=1
     )
 
-    col1, col2 = st.columns(2)
+    col1, col2 = st.columns(
+        2,
+        gap="large"
+    )
 
     with col1:
 
-        st.markdown("### Copy Link")
+        with st.container(
+            border=True
+        ):
 
-        st.text_input(
-            "Class Link",
-            value=join_url,
-            label_visibility="collapsed"
-        )
+            st.subheader(
+                "Class Link"
+            )
 
-        st.text_input(
-            "Subject Code",
-            value=subject_code,
-            label_visibility="collapsed"
-        )
+            st.caption(
+                "Share this link with your students."
+            )
 
-        st.info(
-            "Copy this link to share on WhatsApp or Email."
-        )
+            st.text_input(
+                "Class Link",
+                value=join_url,
+                label_visibility="collapsed"
+            )
+
+            st.write("")
+
+            st.text_input(
+                "Subject Code",
+                value=subject_code,
+                label_visibility="collapsed"
+            )
+
+            st.info(
+                "Copy the class link and share it through "
+                "WhatsApp, Email or any other platform."
+            )
 
     with col2:
 
-        st.markdown("### Scan to Join")
+        with st.container(
+            border=True
+        ):
 
-        st.image(
-            output.getvalue(),
-            caption="QR code for class joining"
-        )
+            st.subheader(
+                "Scan to Join"
+            )
+
+            st.caption(
+                "Students can scan this QR code to join instantly."
+            )
+
+            st.image(
+                output.getvalue(),
+                caption="Scan to join the class"
+            )

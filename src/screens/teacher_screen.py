@@ -39,10 +39,6 @@ from src.database.db import (
 )
 
 
-# =========================================================
-# TEACHER PASSWORD RECOVERY
-# =========================================================
-
 def generate_recovery_pkce():
 
     code_verifier = secrets.token_urlsafe(64)
@@ -227,10 +223,6 @@ def check_teacher_recovery_session():
         return False
 
 
-# =========================================================
-# TEACHER SCREEN ROUTER
-# =========================================================
-
 def teacher_screen():
 
     style_background_dashboard()
@@ -282,17 +274,9 @@ def teacher_screen():
         teacher_screen_forgot_password()
 
 
-# =========================================================
-# TEACHER DASHBOARD
-# =========================================================
-
 def teacher_dashboard():
 
     teacher_data = st.session_state.teacher_data
-
-    # =====================================================
-    # PENDING VOICE ATTENDANCE RESULT
-    # =====================================================
 
     pending_voice = st.session_state.get(
         "voice_attendance_pending"
@@ -307,41 +291,49 @@ def teacher_dashboard():
 
         return
 
-    c1, c2 = st.columns(
-        2,
-        vertical_alignment="center",
-        gap="xxlarge"
-    )
+    with st.container(
+        border=True
+    ):
 
-    with c1:
-
-        header_dashboard()
-
-    with c2:
-
-        st.subheader(
-            f"Welcome, {teacher_data['name']}"
+        c1, c2 = st.columns(
+            [2.2, 1],
+            vertical_alignment="center",
+            gap="large"
         )
 
-        if st.button(
-            "Logout",
-            type="secondary",
-            key="teacher_logout",
-            shortcut="control+backspace"
-        ):
+        with c1:
 
-            st.session_state["is_logged_in"] = False
+            header_dashboard()
 
-            st.session_state["user_role"] = None
+        with c2:
 
-            st.session_state.pop(
-                "teacher_data",
-                None
+            st.caption("TEACHER")
+
+            st.subheader(
+                f"Welcome, {teacher_data['name']}"
             )
 
-            st.rerun()
+            if st.button(
+                "Logout",
+                type="secondary",
+                key="teacher_logout",
+                shortcut="control+backspace",
+                width="stretch",
+                icon=":material/logout:"
+            ):
 
-    st.space()
+                st.session_state["is_logged_in"] = False
+
+                st.session_state["user_role"] = None
+
+                st.session_state.pop(
+                    "teacher_data",
+                    None
+                )
+
+                st.rerun()
+
+    st.write("")
 
     if "current_teacher_tab" not in st.session_state:
 
@@ -349,7 +341,10 @@ def teacher_dashboard():
             "take_attendance"
         )
 
-    tab1, tab2, tab3, tab4 = st.columns(4)
+    tab1, tab2, tab3, tab4 = st.columns(
+        4,
+        gap="small"
+    )
 
     with tab1:
 
@@ -359,14 +354,14 @@ def teacher_dashboard():
                 st.session_state.current_teacher_tab
                 == "take_attendance"
             )
-            else "tertiary"
+            else "secondary"
         )
 
         if st.button(
             "Take Attendance",
             type=button_type,
             width="stretch",
-            icon=":material/ar_on_you:"
+            icon=":material/face:"
         ):
 
             st.session_state.current_teacher_tab = (
@@ -383,14 +378,14 @@ def teacher_dashboard():
                 st.session_state.current_teacher_tab
                 == "manage_subjects"
             )
-            else "tertiary"
+            else "secondary"
         )
 
         if st.button(
             "Manage Subjects",
             type=button_type,
             width="stretch",
-            icon=":material/book_ribbon:"
+            icon=":material/menu_book:"
         ):
 
             st.session_state.current_teacher_tab = (
@@ -407,14 +402,14 @@ def teacher_dashboard():
                 st.session_state.current_teacher_tab
                 == "manage_students"
             )
-            else "tertiary"
+            else "secondary"
         )
 
         if st.button(
             "Manage Students",
             type=button_type,
             width="stretch",
-            icon=":material/group:"
+            icon=":material/groups:"
         ):
 
             st.session_state.current_teacher_tab = (
@@ -431,14 +426,14 @@ def teacher_dashboard():
                 st.session_state.current_teacher_tab
                 == "attendance_records"
             )
-            else "tertiary"
+            else "secondary"
         )
 
         if st.button(
             "Attendance Records",
             type=button_type,
             width="stretch",
-            icon=":material/cards_stack:"
+            icon=":material/assignment:"
         ):
 
             st.session_state.current_teacher_tab = (
@@ -447,7 +442,7 @@ def teacher_dashboard():
 
             st.rerun()
 
-    st.divider()
+    st.write("")
 
     if (
         st.session_state.current_teacher_tab
@@ -480,19 +475,11 @@ def teacher_dashboard():
     footer_dashboard()
 
 
-# =========================================================
-# TAKE ATTENDANCE
-# =========================================================
-
 def teacher_tab_take_attendance():
 
     teacher_id = st.session_state.teacher_data[
         "teacher_id"
     ]
-
-    st.header(
-        "Take AI Attendance"
-    )
 
     if "attendance_images" not in st.session_state:
 
@@ -503,6 +490,18 @@ def teacher_tab_take_attendance():
     )
 
     if not subjects:
+
+        with st.container(
+            border=True
+        ):
+
+            st.subheader(
+                "No subjects available"
+            )
+
+            st.caption(
+                "Create a subject first before taking attendance."
+            )
 
         st.warning(
             "You haven't created any subjects yet! "
@@ -517,30 +516,47 @@ def teacher_tab_take_attendance():
         for subject in subjects
     }
 
-    col1, col2 = st.columns(
-        [3, 1],
-        vertical_alignment="bottom"
+    st.header(
+        "Take AI Attendance"
     )
 
-    with col1:
+    st.caption(
+        "Select a subject, add classroom photos and let AI identify enrolled students."
+    )
 
-        selected_subject_label = st.selectbox(
-            "Select Subject",
-            options=list(
-                subject_options.keys()
-            )
+    with st.container(
+        border=True
+    ):
+
+        st.subheader(
+            "1. Select Subject"
         )
 
-    with col2:
+        col1, col2 = st.columns(
+            [3, 1],
+            vertical_alignment="bottom",
+            gap="medium"
+        )
 
-        if st.button(
-            "Add Photos",
-            type="primary",
-            icon=":material/photo_prints:",
-            width="stretch"
-        ):
+        with col1:
 
-            add_photos_dialog()
+            selected_subject_label = st.selectbox(
+                "Select Subject",
+                options=list(
+                    subject_options.keys()
+                )
+            )
+
+        with col2:
+
+            if st.button(
+                "Add Photos",
+                type="primary",
+                icon=":material/photo_prints:",
+                width="stretch"
+            ):
+
+                add_photos_dialog()
 
     selected_subject_id = (
         subject_options[
@@ -548,270 +564,293 @@ def teacher_tab_take_attendance():
         ]
     )
 
-    st.divider()
-
-    if st.session_state.attendance_images:
-
-        st.header(
-            "Added Photos"
-        )
-
-        gallery_cols = st.columns(4)
-
-        for idx, image in enumerate(
-            st.session_state.attendance_images
-        ):
-
-            with gallery_cols[
-                idx % 4
-            ]:
-
-                st.image(
-                    image,
-                    width="stretch",
-                    caption=f"Photo {idx + 1}"
-                )
+    st.write("")
 
     has_photos = bool(
         st.session_state.attendance_images
     )
 
-    c1, c2 = st.columns(2)
+    with st.container(
+        border=True
+    ):
 
-    with c1:
+        st.subheader(
+            "2. Classroom Photos"
+        )
 
-        if st.button(
-            "Clear all photos",
-            width="stretch",
-            type="tertiary",
-            icon=":material/delete:",
-            disabled=not has_photos
-        ):
+        if has_photos:
 
-            st.session_state.attendance_images = []
+            st.caption(
+                f"{len(st.session_state.attendance_images)} photo(s) ready for AI analysis."
+            )
 
-            st.rerun()
+            gallery_cols = st.columns(
+                4,
+                gap="medium"
+            )
 
-    with c2:
-
-        if st.button(
-            "Run Face Analysis",
-            width="stretch",
-            type="secondary",
-            icon=":material/analytics:",
-            disabled=not has_photos
-        ):
-
-            with st.spinner(
-                "Deep scanning classroom photos..."
+            for idx, image in enumerate(
+                st.session_state.attendance_images
             ):
 
-                enrolled_res = (
-                    supabase
-                    .table("subject_students")
-                    .select(
-                        "*, students(*)"
-                    )
-                    .eq(
-                        "subject_id",
-                        selected_subject_id
-                    )
-                    .execute()
-                )
+                with gallery_cols[
+                    idx % 4
+                ]:
 
-                enrolled_students = (
-                    enrolled_res.data
-                    or []
-                )
-
-                if not enrolled_students:
-
-                    st.warning(
-                        "Students need to enroll first."
+                    st.image(
+                        image,
+                        width="stretch",
+                        caption=f"Photo {idx + 1}"
                     )
 
-                    return
+        else:
 
-                enrolled_ids = set()
+            st.info(
+                "No classroom photos added yet. "
+                "Use Add Photos above to upload images."
+            )
 
-                valid_enrolled_students = []
+        st.write("")
 
-                for node in enrolled_students:
+        c1, c2 = st.columns(
+            2,
+            gap="medium"
+        )
 
-                    student = node.get(
-                        "students"
-                    )
+        with c1:
 
-                    if not student:
-                        continue
+            if st.button(
+                "Clear All Photos",
+                width="stretch",
+                type="secondary",
+                icon=":material/delete:",
+                disabled=not has_photos
+            ):
 
-                    student_id = student.get(
-                        "student_id"
-                    )
+                st.session_state.attendance_images = []
 
-                    if student_id is None:
-                        continue
+                st.rerun()
 
-                    student_id = int(
-                        student_id
-                    )
+        with c2:
 
-                    enrolled_ids.add(
-                        student_id
-                    )
+            if st.button(
+                "Run Face Analysis",
+                width="stretch",
+                type="primary",
+                icon=":material/analytics:",
+                disabled=not has_photos
+            ):
 
-                    valid_enrolled_students.append(
-                        node
-                    )
-
-                if not enrolled_ids:
-
-                    st.warning(
-                        "Students need to enroll first."
-                    )
-
-                    return
-
-                all_detected_ids = {}
-
-                total_faces_detected = 0
-
-                for idx, image in enumerate(
-                    st.session_state.attendance_images
+                with st.spinner(
+                    "Deep scanning classroom photos..."
                 ):
 
-                    image_np = np.array(
-                        image.convert("RGB")
-                    )
-
-                    detected, _, face_count = (
-                        predict_attendance(
-                            image_np,
-                            allowed_student_ids=enrolled_ids
+                    enrolled_res = (
+                        supabase
+                        .table("subject_students")
+                        .select(
+                            "*, students(*)"
                         )
+                        .eq(
+                            "subject_id",
+                            selected_subject_id
+                        )
+                        .execute()
                     )
 
-                    total_faces_detected += (
-                        face_count
+                    enrolled_students = (
+                        enrolled_res.data
+                        or []
                     )
 
-                    for student_id in detected.keys():
+                    if not enrolled_students:
+
+                        st.warning(
+                            "Students need to enroll first."
+                        )
+
+                        return
+
+                    enrolled_ids = set()
+
+                    valid_enrolled_students = []
+
+                    for node in enrolled_students:
+
+                        student = node.get(
+                            "students"
+                        )
+
+                        if not student:
+                            continue
+
+                        student_id = student.get(
+                            "student_id"
+                        )
+
+                        if student_id is None:
+                            continue
 
                         student_id = int(
                             student_id
                         )
 
-                        all_detected_ids.setdefault(
-                            student_id,
-                            []
-                        ).append(
-                            f"Photo {idx + 1}"
+                        enrolled_ids.add(
+                            student_id
                         )
 
-                if not all_detected_ids:
+                        valid_enrolled_students.append(
+                            node
+                        )
 
-                    if total_faces_detected > 0:
+                    if not enrolled_ids:
 
                         st.warning(
-                            "No enrolled student was recognized. "
-                            "Unknown or non-enrolled faces are ignored. "
-                            "Attendance was not generated."
+                            "Students need to enroll first."
                         )
 
-                    else:
+                        return
 
-                        st.info(
-                            "No face was detected in the "
-                            "uploaded photos."
+                    all_detected_ids = {}
+
+                    total_faces_detected = 0
+
+                    for idx, image in enumerate(
+                        st.session_state.attendance_images
+                    ):
+
+                        image_np = np.array(
+                            image.convert("RGB")
                         )
 
-                    return
-
-                results = []
-
-                attendance_to_log = []
-
-                current_timestamp = (
-                    datetime.now().strftime(
-                        "%Y-%m-%dT%H:%M:%S"
-                    )
-                )
-
-                for node in valid_enrolled_students:
-
-                    student = node["students"]
-
-                    student_id = int(
-                        student["student_id"]
-                    )
-
-                    sources = all_detected_ids.get(
-                        student_id,
-                        []
-                    )
-
-                    is_present = bool(
-                        sources
-                    )
-
-                    results.append({
-                        "Name": student["name"],
-                        "ID": student_id,
-                        "Source": (
-                            ", ".join(
-                                sources
+                        detected, _, face_count = (
+                            predict_attendance(
+                                image_np,
+                                allowed_student_ids=enrolled_ids
                             )
-                            if is_present
-                            else "-"
-                        ),
-                        "Status": (
-                            "✅ Present"
-                            if is_present
-                            else "❌ Absent"
                         )
-                    })
 
-                    attendance_to_log.append({
-                        "student_id": student_id,
-                        "subject_id": selected_subject_id,
-                        "timestamp": current_timestamp,
-                        "is_present": is_present
-                    })
+                        total_faces_detected += (
+                            face_count
+                        )
 
-                if results:
+                        for student_id in detected.keys():
 
-                    attendance_result_dialog(
-                        pd.DataFrame(
-                            results
-                        ),
-                        attendance_to_log
+                            student_id = int(
+                                student_id
+                            )
+
+                            all_detected_ids.setdefault(
+                                student_id,
+                                []
+                            ).append(
+                                f"Photo {idx + 1}"
+                            )
+
+                    if not all_detected_ids:
+
+                        if total_faces_detected > 0:
+
+                            st.warning(
+                                "No enrolled student was recognized. "
+                                "Unknown or non-enrolled faces are ignored. "
+                                "Attendance was not generated."
+                            )
+
+                        else:
+
+                            st.info(
+                                "No face was detected in the "
+                                "uploaded photos."
+                            )
+
+                        return
+
+                    results = []
+
+                    attendance_to_log = []
+
+                    current_timestamp = (
+                        datetime.now().strftime(
+                            "%Y-%m-%dT%H:%M:%S"
+                        )
                     )
 
-    st.divider()
+                    for node in valid_enrolled_students:
 
-    st.header(
-        "Voice Attendance"
-    )
+                        student = node["students"]
 
-    st.write(
-        "Record live classroom audio and let AI "
-        "recognize enrolled student voices."
-    )
+                        student_id = int(
+                            student["student_id"]
+                        )
 
-    if st.button(
-        "🎙️ Start Voice Attendance",
-        type="primary",
-        width="stretch"
+                        sources = all_detected_ids.get(
+                            student_id,
+                            []
+                        )
+
+                        is_present = bool(
+                            sources
+                        )
+
+                        results.append({
+                            "Name": student["name"],
+                            "ID": student_id,
+                            "Source": (
+                                ", ".join(
+                                    sources
+                                )
+                                if is_present
+                                else "-"
+                            ),
+                            "Status": (
+                                "✅ Present"
+                                if is_present
+                                else "❌ Absent"
+                            )
+                        })
+
+                        attendance_to_log.append({
+                            "student_id": student_id,
+                            "subject_id": selected_subject_id,
+                            "timestamp": current_timestamp,
+                            "is_present": is_present
+                        })
+
+                    if results:
+
+                        attendance_result_dialog(
+                            pd.DataFrame(
+                                results
+                            ),
+                            attendance_to_log
+                        )
+
+    st.write("")
+
+    with st.container(
+        border=True
     ):
 
-        voice_attendance_dialog(
-            selected_subject_id
+        st.subheader(
+            "3. Voice Attendance"
         )
 
+        st.caption(
+            "Record live classroom audio and let AI recognize enrolled student voices."
+        )
 
-# =========================================================
-# MANAGE SUBJECTS
-# =========================================================
+        if st.button(
+            "Start Voice Attendance",
+            type="primary",
+            width="stretch",
+            icon=":material/mic:"
+        ):
+
+            voice_attendance_dialog(
+                selected_subject_id
+            )
+
 
 def teacher_tab_manage_subjects():
 
@@ -819,24 +858,48 @@ def teacher_tab_manage_subjects():
         "teacher_id"
     ]
 
-    col1, col2 = st.columns(2)
+    st.header(
+        "Manage Subjects"
+    )
 
-    with col1:
+    st.caption(
+        "Create, share and manage your classroom subjects."
+    )
 
-        st.header(
-            "Manage Subjects"
+    st.write("")
+
+    with st.container(
+        border=True
+    ):
+
+        col1, col2 = st.columns(
+            [2.5, 1],
+            vertical_alignment="center",
+            gap="large"
         )
 
-    with col2:
+        with col1:
 
-        if st.button(
-            "Create New Subject",
-            width="stretch"
-        ):
-
-            create_subject_dialog(
-                teacher_id
+            st.subheader(
+                "Your Subjects"
             )
+
+            st.caption(
+                "Create a subject and share its enrollment code with students."
+            )
+
+        with col2:
+
+            if st.button(
+                "Create New Subject",
+                width="stretch",
+                type="primary",
+                icon=":material/add:"
+            ):
+
+                create_subject_dialog(
+                    teacher_id
+                )
 
     subjects = get_teacher_subjects(
         teacher_id
@@ -844,29 +907,60 @@ def teacher_tab_manage_subjects():
 
     if not subjects:
 
-        st.info(
-            "No subjects found. Create a subject above."
-        )
+        st.write("")
+
+        with st.container(
+            border=True
+        ):
+
+            st.subheader(
+                "No subjects yet"
+            )
+
+            st.caption(
+                "Create your first subject to start managing students and attendance."
+            )
+
+            if st.button(
+                "Create Your First Subject",
+                type="primary",
+                icon=":material/add:"
+            ):
+
+                create_subject_dialog(
+                    teacher_id
+                )
 
         return
 
-    # -----------------------------------------------------
-    # REMOVE SUBJECT
-    # -----------------------------------------------------
+    st.write("")
 
-    if st.button(
-        "Remove Subject",
-        icon=":material/delete:",
-        key="teacher_remove_subject"
-    ):
+    action_col1, action_col2 = st.columns(
+        [1, 3],
+        vertical_alignment="center"
+    )
 
-        remove_subject_dialog(
-            subjects
+    with action_col1:
+
+        if st.button(
+            "Remove Subject",
+            icon=":material/delete:",
+            key="teacher_remove_subject",
+            type="secondary",
+            width="stretch"
+        ):
+
+            remove_subject_dialog(
+                subjects
+            )
+
+    with action_col2:
+
+        st.caption(
+            f"{len(subjects)} subject(s) available"
         )
 
-    # -----------------------------------------------------
-    # SUBJECT CARDS
-    # -----------------------------------------------------
+    st.write("")
 
     rendered_subject_ids = set()
 
@@ -874,7 +968,6 @@ def teacher_tab_manage_subjects():
 
         subject_id = sub["subject_id"]
 
-        # Prevent duplicate rendering of the same subject
         if subject_id in rendered_subject_ids:
             continue
 
@@ -901,10 +994,6 @@ def teacher_tab_manage_subjects():
             )
         ]
 
-        # -------------------------------------------------
-        # STABLE UNIQUE SHARE BUTTON KEY
-        # -------------------------------------------------
-
         share_button_key = (
             f"teacher_manage_subject_share_"
             f"{teacher_id}_"
@@ -920,7 +1009,9 @@ def teacher_tab_manage_subjects():
             if st.button(
                 f"Share Code: {subject_name}",
                 key=button_key,
-                icon=":material/share:"
+                icon=":material/share:",
+                type="secondary",
+                width="stretch"
             ):
 
                 share_subject_dialog(
@@ -928,18 +1019,46 @@ def teacher_tab_manage_subjects():
                     subject_code
                 )
 
-        subject_card(
-            name=sub["name"],
-            code=sub["subject_code"],
-            section=sub["section"],
-            stats=stats,
-            footer_callback=share_btn
-        )
+        with st.container(
+            border=True
+        ):
 
+            st.subheader(
+                sub["name"]
+            )
 
-# =========================================================
-# MANAGE STUDENTS
-# =========================================================
+            st.caption(
+                f"{sub['subject_code']}  •  Section {sub['section']}"
+            )
+
+            st.write("")
+
+            stat1, stat2 = st.columns(2)
+
+            with stat1:
+
+                st.metric(
+                    "Students",
+                    sub.get(
+                        "total_students",
+                        0
+                    )
+                )
+
+            with stat2:
+
+                st.metric(
+                    "Classes",
+                    sub.get(
+                        "total_classes",
+                        0
+                    )
+                )
+
+            st.write("")
+
+            share_btn()
+
 
 def teacher_tab_manage_students():
 
@@ -951,8 +1070,8 @@ def teacher_tab_manage_students():
         "Manage Students"
     )
 
-    st.write(
-        "View and manage students enrolled in your subjects."
+    st.caption(
+        "View enrolled students, check their subject membership and remove students when needed."
     )
 
     subjects = get_teacher_subjects(
@@ -961,9 +1080,17 @@ def teacher_tab_manage_students():
 
     if not subjects:
 
-        st.info(
-            "No subjects found. Create a subject first."
-        )
+        with st.container(
+            border=True
+        ):
+
+            st.subheader(
+                "No subjects available"
+            )
+
+            st.caption(
+                "Create a subject first before managing students."
+            )
 
         return
 
@@ -974,21 +1101,27 @@ def teacher_tab_manage_students():
         for subject in subjects
     }
 
-    selected_subject_label = st.selectbox(
-        "Select Subject",
-        options=list(
-            subject_options.keys()
-        ),
-        key="manage_students_subject"
-    )
+    with st.container(
+        border=True
+    ):
+
+        st.subheader(
+            "1. Select Subject"
+        )
+
+        selected_subject_label = st.selectbox(
+            "Select Subject",
+            options=list(
+                subject_options.keys()
+            ),
+            key="manage_students_subject"
+        )
 
     selected_subject_id = (
         subject_options[
             selected_subject_label
         ]
     )
-
-    st.divider()
 
     enrolled_res = (
         supabase
@@ -1008,17 +1141,39 @@ def teacher_tab_manage_students():
         or []
     )
 
+    st.write("")
+
+    with st.container(
+        border=True
+    ):
+
+        st.subheader(
+            "2. Enrolled Students"
+        )
+
+        st.caption(
+            f"{len(enrolled_students)} student(s) enrolled in {selected_subject_label}."
+        )
+
     if not enrolled_students:
 
-        st.info(
-            "No students are enrolled in this subject."
-        )
+        st.write("")
+
+        with st.container(
+            border=True
+        ):
+
+            st.subheader(
+                "No students enrolled"
+            )
+
+            st.caption(
+                "Students who join this subject will appear here."
+            )
 
         return
 
-    st.subheader(
-        f"Enrolled Students ({len(enrolled_students)})"
-    )
+    st.write("")
 
     for node in enrolled_students:
 
@@ -1038,72 +1193,69 @@ def teacher_tab_manage_students():
             "Unknown Student"
         )
 
-        col1, col2 = st.columns(
-            [4, 1],
-            vertical_alignment="center"
-        )
+        with st.container(
+            border=True
+        ):
 
-        with col1:
-
-            st.markdown(
-                f"""
-                <div style="
-                    padding:10px 0;
-                ">
-                    <strong>{student_name}</strong><br>
-                    <span style="
-                        color:#666666;
-                        font-size:14px;
-                    ">
-                        Student ID: {student_id}
-                    </span>
-                </div>
-                """,
-                unsafe_allow_html=True
+            col1, col2 = st.columns(
+                [4, 1],
+                vertical_alignment="center",
+                gap="large"
             )
 
-        with col2:
+            with col1:
 
-            if st.button(
-                "Remove",
-                key=(
-                    f"remove_student_"
-                    f"{selected_subject_id}_"
-                    f"{student_id}"
-                ),
-                type="secondary",
-                icon=":material/person_remove:"
-            ):
+                st.subheader(
+                    student_name
+                )
 
-                try:
+                st.caption(
+                    f"Student ID: {student_id}"
+                )
 
-                    unenroll_student_to_subject(
-                        student_id,
-                        selected_subject_id
-                    )
+            with col2:
 
-                    st.success(
-                        f"{student_name} removed from "
-                        f"{selected_subject_label}."
-                    )
+                if st.button(
+                    "Remove",
+                    key=(
+                        f"remove_student_"
+                        f"{selected_subject_id}_"
+                        f"{student_id}"
+                    ),
+                    type="secondary",
+                    icon=":material/person_remove:",
+                    width="stretch"
+                ):
 
-                    st.rerun()
+                    try:
 
-                except Exception as e:
+                        unenroll_student_to_subject(
+                            student_id,
+                            selected_subject_id
+                        )
 
-                    st.error(
-                        f"Unable to remove {student_name}: {e}"
-                    )
+                        st.success(
+                            f"{student_name} removed from "
+                            f"{selected_subject_label}."
+                        )
 
+                        st.rerun()
 
-# =========================================================
-# ATTENDANCE RECORDS
-# =========================================================
+                    except Exception as e:
+
+                        st.error(
+                            f"Unable to remove {student_name}: {e}"
+                        )
+
 
 def teacher_tab_attendance_records():
 
     st.header(
         "Attendance Records"
+    )
+
+    st.caption(
+        "Review attendance sessions recorded for your subjects."
     )
 
     teacher_id = st.session_state.teacher_data[
@@ -1116,9 +1268,17 @@ def teacher_tab_attendance_records():
 
     if not records:
 
-        st.info(
-            "No attendance records found."
-        )
+        with st.container(
+            border=True
+        ):
+
+            st.subheader(
+                "No attendance records yet"
+            )
+
+            st.caption(
+                "Attendance sessions will appear here after you record attendance for your subjects."
+            )
 
         return
 
@@ -1176,9 +1336,17 @@ def teacher_tab_attendance_records():
 
     if not data:
 
-        st.info(
-            "No valid attendance records found."
-        )
+        with st.container(
+            border=True
+        ):
+
+            st.subheader(
+                "No valid attendance records"
+            )
+
+            st.caption(
+                "There are no valid attendance entries available to display."
+            )
 
         return
 
@@ -1236,16 +1404,76 @@ def teacher_tab_attendance_records():
         ]
     )
 
-    st.dataframe(
-        display_df,
-        width="stretch",
-        hide_index=True
+    total_sessions = len(
+        summary
     )
 
+    total_present = int(
+        summary["Present_Count"].sum()
+    )
 
-# =========================================================
-# TEACHER LOGIN
-# =========================================================
+    total_entries = int(
+        summary["Total_Count"].sum()
+    )
+
+    with st.container(
+        border=True
+    ):
+
+        st.subheader(
+            "Attendance Overview"
+        )
+
+        st.caption(
+            "A quick summary of your recorded attendance sessions."
+        )
+
+        metric1, metric2, metric3 = st.columns(
+            3,
+            gap="medium"
+        )
+
+        with metric1:
+
+            st.metric(
+                "Sessions",
+                total_sessions
+            )
+
+        with metric2:
+
+            st.metric(
+                "Present Entries",
+                total_present
+            )
+
+        with metric3:
+
+            st.metric(
+                "Attendance Entries",
+                total_entries
+            )
+
+    st.write("")
+
+    with st.container(
+        border=True
+    ):
+
+        st.subheader(
+            "Attendance History"
+        )
+
+        st.caption(
+            "Each row represents one recorded attendance session."
+        )
+
+        st.dataframe(
+            display_df,
+            width="stretch",
+            hide_index=True
+        )
+
 
 def login_teacher(
     username,
@@ -1280,14 +1508,10 @@ def login_teacher(
     return False
 
 
-# =========================================================
-# TEACHER LOGIN SCREEN
-# =========================================================
-
 def teacher_screen_login():
 
     c1, c2 = st.columns(
-        2,
+        [2.2, 1],
         vertical_alignment="center",
         gap="xxlarge"
     )
@@ -1302,7 +1526,8 @@ def teacher_screen_login():
             "Go back to Home",
             type="secondary",
             key="teacher_login_back",
-            shortcut="control+backspace"
+            shortcut="control+backspace",
+            width="stretch"
         ):
 
             st.session_state[
@@ -1311,98 +1536,102 @@ def teacher_screen_login():
 
             st.rerun()
 
-    st.header(
-        "Login using password",
-        text_alignment="center"
-    )
-
-    st.space()
-    st.space()
-
-    teacher_username = st.text_input(
-        "Enter username",
-        placeholder="ananyaroy"
-    )
-
-    teacher_password = st.text_input(
-        "Enter password",
-        type="password",
-        placeholder="Enter password"
-    )
-
-    if st.button(
-        "Forgot Password?",
-        type="tertiary",
-        width="stretch"
+    with st.container(
+        border=True
     ):
 
-        st.session_state[
-            "teacher_login_type"
-        ] = "forgot_password"
+        st.header(
+            "Login using password",
+            text_alignment="center"
+        )
 
-        st.rerun()
+        st.caption(
+            "Access your subjects, attendance and student records."
+        )
 
-    st.divider()
+        st.write("")
 
-    btnc1, btnc2 = st.columns(2)
+        teacher_username = st.text_input(
+            "Enter username",
+            placeholder="ananyaroy"
+        )
 
-    with btnc1:
+        teacher_password = st.text_input(
+            "Enter password",
+            type="password",
+            placeholder="Enter password"
+        )
 
         if st.button(
-            "Login",
-            icon=":material/passkey:",
-            shortcut="control+enter",
+            "Forgot Password?",
+            type="tertiary",
             width="stretch"
         ):
 
-            if login_teacher(
-                teacher_username,
-                teacher_password
-            ):
-
-                st.toast(
-                    "Welcome back!",
-                    icon="👋"
-                )
-
-                import time
-
-                time.sleep(1)
-
-                st.rerun()
-
-            else:
-
-                st.error(
-                    "Invalid username and password combo"
-                )
-
-    with btnc2:
-
-        if st.button(
-            "Register Instead",
-            type="primary",
-            icon=":material/passkey:",
-            width="stretch"
-        ):
-
-            st.session_state.teacher_login_type = (
-                "register"
-            )
+            st.session_state[
+                "teacher_login_type"
+            ] = "forgot_password"
 
             st.rerun()
+
+        st.divider()
+
+        btnc1, btnc2 = st.columns(2)
+
+        with btnc1:
+
+            if st.button(
+                "Login",
+                icon=":material/passkey:",
+                shortcut="control+enter",
+                width="stretch",
+                type="secondary"
+            ):
+
+                if login_teacher(
+                    teacher_username,
+                    teacher_password
+                ):
+
+                    st.toast(
+                        "Welcome back!",
+                        icon="👋"
+                    )
+
+                    import time
+
+                    time.sleep(1)
+
+                    st.rerun()
+
+                else:
+
+                    st.error(
+                        "Invalid username and password combo"
+                    )
+
+        with btnc2:
+
+            if st.button(
+                "Register Instead",
+                type="primary",
+                icon=":material/person_add:",
+                width="stretch"
+            ):
+
+                st.session_state.teacher_login_type = (
+                    "register"
+                )
+
+                st.rerun()
 
     footer_dashboard()
 
 
-# =========================================================
-# FORGOT PASSWORD SCREEN
-# =========================================================
-
 def teacher_screen_forgot_password():
 
     c1, c2 = st.columns(
-        2,
+        [2.2, 1],
         vertical_alignment="center",
         gap="xxlarge"
     )
@@ -1425,50 +1654,50 @@ def teacher_screen_forgot_password():
 
             st.rerun()
 
-    st.header(
-        "Reset your password",
-        text_alignment="center"
-    )
-
-    st.write(
-        "Enter the email address linked to your teacher account."
-    )
-
-    teacher_email = st.text_input(
-        "Enter email",
-        placeholder="ananya@example.com"
-    )
-
-    if st.button(
-        "Send Reset Link",
-        type="primary",
-        width="stretch"
+    with st.container(
+        border=True
     ):
 
-        success, message = (
-            send_teacher_password_reset(
-                teacher_email
-            )
+        st.header(
+            "Reset your password",
+            text_alignment="center"
         )
 
-        if success:
+        st.caption(
+            "Enter the email address linked to your teacher account."
+        )
 
-            st.success(
-                message
+        teacher_email = st.text_input(
+            "Enter email",
+            placeholder="ananya@example.com"
+        )
+
+        if st.button(
+            "Send Reset Link",
+            type="primary",
+            width="stretch"
+        ):
+
+            success, message = (
+                send_teacher_password_reset(
+                    teacher_email
+                )
             )
 
-        else:
+            if success:
 
-            st.error(
-                message
-            )
+                st.success(
+                    message
+                )
+
+            else:
+
+                st.error(
+                    message
+                )
 
     footer_dashboard()
 
-
-# =========================================================
-# UPDATE PASSWORD SCREEN
-# =========================================================
 
 def teacher_screen_update_password():
 
@@ -1490,7 +1719,7 @@ def teacher_screen_update_password():
         st.rerun()
 
     c1, c2 = st.columns(
-        2,
+        [2.2, 1],
         vertical_alignment="center",
         gap="xxlarge"
     )
@@ -1499,105 +1728,105 @@ def teacher_screen_update_password():
 
         header_dashboard()
 
-    st.header(
-        "Create a new password",
-        text_alignment="center"
-    )
-
-    st.write(
-        f"Reset password for {teacher['name']}"
-    )
-
-    new_password = st.text_input(
-        "New password",
-        type="password",
-        placeholder="Enter new password"
-    )
-
-    confirm_password = st.text_input(
-        "Confirm new password",
-        type="password",
-        placeholder="Enter new password again"
-    )
-
-    if st.button(
-        "Update Password",
-        type="primary",
-        width="stretch"
+    with st.container(
+        border=True
     ):
 
-        if not new_password or not confirm_password:
+        st.header(
+            "Create a new password",
+            text_alignment="center"
+        )
 
-            st.error(
-                "Both password fields are required."
-            )
+        st.caption(
+            f"Reset password for {teacher['name']}"
+        )
 
-            return
+        new_password = st.text_input(
+            "New password",
+            type="password",
+            placeholder="Enter new password"
+        )
 
-        if new_password != confirm_password:
+        confirm_password = st.text_input(
+            "Confirm new password",
+            type="password",
+            placeholder="Enter new password again"
+        )
 
-            st.error(
-                "Passwords don't match."
-            )
+        if st.button(
+            "Update Password",
+            type="primary",
+            width="stretch"
+        ):
 
-            return
+            if not new_password or not confirm_password:
 
-        if len(new_password) < 6:
+                st.error(
+                    "Both password fields are required."
+                )
 
-            st.error(
-                "Password must be at least 6 characters."
-            )
+                return
 
-            return
+            if new_password != confirm_password:
 
-        try:
+                st.error(
+                    "Passwords don't match."
+                )
 
-            supabase.auth.update_user({
-                "password": new_password
-            })
+                return
 
-            update_teacher_password(
-                teacher["teacher_id"],
-                new_password
-            )
+            if len(new_password) < 6:
 
-            st.session_state.pop(
-                "teacher_recovery",
-                None
-            )
+                st.error(
+                    "Password must be at least 6 characters."
+                )
 
-            st.session_state.pop(
-                "teacher_recovery_code_verifier",
-                None
-            )
+                return
 
-            st.session_state.teacher_login_type = (
-                "login"
-            )
+            try:
 
-            st.success(
-                "Password updated successfully. "
-                "You can now login with your new password."
-            )
+                supabase.auth.update_user({
+                    "password": new_password
+                })
 
-            import time
+                update_teacher_password(
+                    teacher["teacher_id"],
+                    new_password
+                )
 
-            time.sleep(1)
+                st.session_state.pop(
+                    "teacher_recovery",
+                    None
+                )
 
-            st.rerun()
+                st.session_state.pop(
+                    "teacher_recovery_code_verifier",
+                    None
+                )
 
-        except Exception as e:
+                st.session_state.teacher_login_type = (
+                    "login"
+                )
 
-            st.error(
-                f"Unable to update password: {e}"
-            )
+                st.success(
+                    "Password updated successfully. "
+                    "You can now login with your new password."
+                )
+
+                import time
+
+                time.sleep(1)
+
+                st.rerun()
+
+            except Exception as e:
+
+                st.error(
+                    f"Unable to update password: {e}"
+                )
 
     footer_dashboard()
 
-
-# =========================================================
-# REGISTER TEACHER
-# =========================================================
 
 def register_teacher(
     teacher_username,
@@ -1660,7 +1889,7 @@ def register_teacher(
 def teacher_screen_register():
 
     c1, c2 = st.columns(
-        2,
+        [2.2, 1],
         vertical_alignment="center",
         gap="xxlarge"
     )
@@ -1675,7 +1904,8 @@ def teacher_screen_register():
             "Go back to Home",
             type="secondary",
             key="teacher_register_back",
-            shortcut="control+backspace"
+            shortcut="control+backspace",
+            width="stretch"
         ):
 
             st.session_state[
@@ -1684,96 +1914,104 @@ def teacher_screen_register():
 
             st.rerun()
 
-    st.header(
-        "Register your teacher profile"
-    )
+    with st.container(
+        border=True
+    ):
 
-    st.space()
-    st.space()
+        st.header(
+            "Register your teacher profile"
+        )
 
-    teacher_username = st.text_input(
-        "Enter username",
-        placeholder="ananyaroy"
-    )
+        st.caption(
+            "Create your teacher account to manage attendance."
+        )
 
-    teacher_name = st.text_input(
-        "Enter name",
-        placeholder="Ananya Roy"
-    )
+        st.write("")
 
-    teacher_email = st.text_input(
-        "Enter email",
-        placeholder="ananya@example.com"
-    )
+        teacher_username = st.text_input(
+            "Enter username",
+            placeholder="ananyaroy"
+        )
 
-    teacher_password = st.text_input(
-        "Enter password",
-        type="password",
-        placeholder="Enter password"
-    )
+        teacher_name = st.text_input(
+            "Enter name",
+            placeholder="Ananya Roy"
+        )
 
-    teacher_password_confirm = st.text_input(
-        "Confirm your password",
-        type="password",
-        placeholder="Enter password"
-    )
+        teacher_email = st.text_input(
+            "Enter email",
+            placeholder="ananya@example.com"
+        )
 
-    st.divider()
+        teacher_password = st.text_input(
+            "Enter password",
+            type="password",
+            placeholder="Enter password"
+        )
 
-    btnc1, btnc2 = st.columns(2)
+        teacher_password_confirm = st.text_input(
+            "Confirm your password",
+            type="password",
+            placeholder="Enter password"
+        )
 
-    with btnc1:
+        st.divider()
 
-        if st.button(
-            "Register now",
-            icon=":material/passkey:",
-            shortcut="control+enter",
-            width="stretch"
-        ):
+        btnc1, btnc2 = st.columns(2)
 
-            success, message = register_teacher(
-                teacher_username,
-                teacher_name,
-                teacher_email,
-                teacher_password,
-                teacher_password_confirm
-            )
+        with btnc1:
 
-            if success:
+            if st.button(
+                "Register now",
+                icon=":material/person_add:",
+                shortcut="control+enter",
+                width="stretch",
+                type="secondary"
+            ):
 
-                st.success(
-                    message
+                success, message = register_teacher(
+                    teacher_username,
+                    teacher_name,
+                    teacher_email,
+                    teacher_password,
+                    teacher_password_confirm
                 )
 
-                import time
+                if success:
 
-                time.sleep(1)
+                    st.success(
+                        message
+                    )
+
+                    import time
+
+                    time.sleep(1)
+
+                    st.session_state.teacher_login_type = (
+                        "login"
+                    )
+
+                    st.rerun()
+
+                else:
+
+                    st.error(
+                        message
+                    )
+
+        with btnc2:
+
+            if st.button(
+                "Login Instead",
+                type="primary",
+                icon=":material/login:",
+                width="stretch"
+            ):
 
                 st.session_state.teacher_login_type = (
                     "login"
                 )
 
                 st.rerun()
-
-            else:
-
-                st.error(
-                    message
-                )
-
-    with btnc2:
-
-        if st.button(
-            "Login Instead",
-            type="primary",
-            icon=":material/passkey:",
-            width="stretch"
-        ):
-
-            st.session_state.teacher_login_type = (
-                "login"
-            )
-
-            st.rerun()
 
     footer_dashboard()

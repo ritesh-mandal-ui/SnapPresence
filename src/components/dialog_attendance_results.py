@@ -5,24 +5,52 @@ from src.database.db import create_attendance
 
 def show_attendance_result(df, logs):
 
-    st.write(
-        "Please review attendance before confirming."
+    st.subheader(
+        "Review Attendance"
     )
 
-    st.dataframe(
-        df,
-        hide_index=True,
-        width="stretch"
+    st.caption(
+        "Please review the detected attendance before confirming."
     )
 
-    col1, col2 = st.columns(2)
+    st.write("")
+
+    with st.container(
+        border=True
+    ):
+
+        st.subheader(
+            "Attendance Summary"
+        )
+
+        st.dataframe(
+            df,
+            hide_index=True,
+            width="stretch"
+        )
+
+    st.write("")
+
+    st.info(
+        "Confirm the attendance to save it to the attendance records, "
+        "or discard it to start again."
+    )
+
+    st.write("")
+
+    col1, col2 = st.columns(
+        2,
+        gap="small"
+    )
 
     with col1:
 
         if st.button(
             "Discard",
             width="stretch",
-            key="attendance_discard"
+            key="attendance_discard",
+            type="secondary",
+            icon=":material/delete:"
         ):
 
             st.session_state.pop(
@@ -52,7 +80,8 @@ def show_attendance_result(df, logs):
             "Confirm & Save",
             width="stretch",
             type="primary",
-            key="attendance_confirm_save"
+            key="attendance_confirm_save",
+            icon=":material/check_circle:"
         ):
 
             try:
@@ -64,7 +93,7 @@ def show_attendance_result(df, logs):
                 if not saved_attendance:
 
                     st.warning(
-                        "⚠️ Attendance already marked for today."
+                        "Attendance already marked for today."
                     )
 
                     return

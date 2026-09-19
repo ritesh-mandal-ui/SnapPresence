@@ -16,6 +16,14 @@ def home_screen():
 
     header_home()
 
+    st.title("Attendance that happens in seconds.")
+
+    st.caption(
+        "Choose your portal and experience faster, smarter and simpler attendance with Snap Presence."
+    )
+
+    st.write("")
+
     col1, col2 = st.columns(
         2,
         gap="large"
@@ -23,48 +31,96 @@ def home_screen():
 
     with col1:
 
-        st.header("I'm Student")
+        with st.container(border=True):
 
-        st.image(
-            "https://i.ibb.co/844D9Lrt/mascot-student.png",
-            width=120
-        )
+            st.subheader("🎓 I'm a Student")
 
-        if st.button(
-            "Student Portal",
-            type="primary",
-            icon=":material/arrow_outward:",
-            icon_position="right"
-        ):
+            st.caption("STUDENT")
 
-            st.session_state["login_type"] = "student"
-            st.rerun()
+            st.write(
+                "Mark your attendance using Face ID or Voice and manage all your enrolled subjects."
+            )
+
+            st.image(
+                "https://i.ibb.co/844D9Lrt/mascot-student.png",
+                width=135
+            )
+
+            if st.button(
+                "Student Portal",
+                type="primary",
+                icon=":material/arrow_outward:",
+                icon_position="right",
+                use_container_width=True
+            ):
+
+                st.session_state["login_type"] = "student"
+                st.rerun()
 
     with col2:
 
-        st.header("I'm Teacher")
+        with st.container(border=True):
 
-        st.image(
-            "https://i.ibb.co/CsmQQV6X/mascot-prof.png",
-            width=145
-        )
+            st.subheader("👨‍🏫 I'm a Teacher")
 
-        if st.button(
-            "Teacher Portal",
-            type="primary",
-            icon=":material/arrow_outward:",
-            icon_position="right"
-        ):
+            st.caption("TEACHER")
 
-            st.session_state["login_type"] = "teacher"
-            st.rerun()
+            st.write(
+                "Manage subjects, take attendance and monitor attendance records from one place."
+            )
 
-    # Push the footer lower on the Home page
-    st.markdown(
-        """
-        <div style="height:180px;"></div>
-        """,
-        unsafe_allow_html=True
-    )
+            st.image(
+                "https://i.ibb.co/CsmQQV6X/mascot-prof.png",
+                width=155
+            )
+
+            if st.button(
+                "Teacher Portal",
+                type="primary",
+                icon=":material/arrow_outward:",
+                icon_position="right",
+                use_container_width=True
+            ):
+
+                st.session_state["login_type"] = "teacher"
+                st.rerun()
+
+    st.write("")
+
+    st.subheader("Snap Presence Features")
+
+    feature1, feature2, feature3, feature4 = st.columns(4)
+
+    with feature1:
+
+        with st.container(border=True):
+
+            st.write("◉ Face Recognition")
+            st.caption("AI-powered attendance")
+
+    with feature2:
+
+        with st.container(border=True):
+
+            st.write("◉ Voice Attendance")
+            st.caption("Fast voice-based marking")
+
+    with feature3:
+
+        with st.container(border=True):
+
+            st.write("◉ Smart Records")
+            st.caption("Attendance management")
+
+    with feature4:
+
+        with st.container(border=True):
+
+            st.write("◉ Quick Enrollment")
+            st.caption("Join subjects instantly")
+
+    st.write("")
+    st.write("")
+    st.write("")
 
     footer_home()

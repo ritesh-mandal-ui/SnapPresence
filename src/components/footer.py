@@ -31,27 +31,22 @@ def footer_home():
             border-radius: 0 !important;
         }
 
-        /* =====================================================
-           HOME FOOTER
-           ===================================================== */
-
         .st-key-home-footer {
-
             position: fixed !important;
-
             left: 0 !important;
             right: 0 !important;
             bottom: 0 !important;
-
             width: 100% !important;
-
             z-index: 999 !important;
-
-            background: transparent !important;
-
-            padding: 8px 0 10px 0 !important;
-
+            background: rgba(247, 248, 252, 0.94) !important;
+            backdrop-filter: blur(10px) !important;
+            padding: 6px 0 8px 0 !important;
             margin: 0 !important;
+            border-top: 1px solid #e5e7eb !important;
+        }
+
+        .st-key-home-footer [data-testid="stHorizontalBlock"] {
+            gap: 0.25rem !important;
         }
 
         </style>
@@ -69,55 +64,30 @@ def footer_home():
         with col2:
 
             footer_col1, footer_col2 = st.columns(
-                [1, 1],
+                [1.15, 0.85],
+                gap="small",
                 vertical_alignment="center"
             )
 
             with footer_col1:
 
                 st.markdown(
-                    """
-                    <div style="
-                        text-align:right;
-                        font-size:16px;
-                        font-weight:bold;
-                        color:#111111;
-                        white-space:nowrap;
-                    ">
-                        Created with ❤️ by
-                    </div>
-                    """,
-                    unsafe_allow_html=True
+                    "Created with ❤️ by",
+                    text_alignment="right"
                 )
 
             with footer_col2:
 
                 if logo_path:
 
-                    st.markdown(
-                        "<div style='margin-top:7px;'></div>",
-                        unsafe_allow_html=True
-                    )
-
                     st.image(
                         logo_path,
-                        width=120
+                        width=105
                     )
 
                 else:
 
-                    st.markdown(
-                        """
-                        <div style="
-                            font-weight:bold;
-                            color:#111111;
-                            white-space:nowrap;
-                        ">
-                            RITESH MANDAL
-                        </div>
-                        """,
-                        unsafe_allow_html=True
-                    )
+                    st.write("RITESH MANDAL")
 
 
 def footer_dashboard():
@@ -145,44 +115,19 @@ def footer_dashboard():
     with col1:
 
         st.markdown(
-            """
-            <div style="
-                text-align:right;
-                font-weight:bold;
-                color:#111111;
-                white-space:nowrap;
-            ">
-                Created with ❤️ by
-            </div>
-            """,
-            unsafe_allow_html=True
+            "Created with ❤️ by",
+            text_alignment="right"
         )
 
     with col2:
 
         if logo_path:
 
-            st.markdown(
-                "<div style='height:8px;'></div>",
-                unsafe_allow_html=True
-            )
-
             st.image(
                 logo_path,
-                width=120
+                width=105
             )
 
         else:
 
-            st.markdown(
-                """
-                <div style="
-                    font-weight:bold;
-                    color:#111111;
-                    white-space:nowrap;
-                ">
-                    RITESH MANDAL
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
+            st.write("RITESH MANDAL")
