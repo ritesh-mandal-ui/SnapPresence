@@ -443,18 +443,31 @@ def get_attendance_for_teacher(teacher_id):
 
 
 def get_teacher_by_email(email):
-    response = (
-        supabase
-        .table("teachers")
-        .select("*")
-        .eq("email", email)
-        .execute()
-    )
+    try:
+        response = (
+            supabase
+            .table("teachers")
+            .select(
+                "teacher_id, username, email, auth_user_id"
+            )
+            .eq(
+                "email",
+                email.strip()
+            )
+            .execute()
+        )
 
-    if not response.data:
-        return None
+        if not response.data:
+            return None
 
-    return response.data[0]
+        return response.data[0]
+
+    except Exception as e:
+        print(
+            "Teacher email lookup failed:",
+            repr(e)
+        )
+        raise
 
 
 def update_teacher_password(
@@ -475,4 +488,3 @@ def update_teacher_password(
     )
 
     return response.data
-
