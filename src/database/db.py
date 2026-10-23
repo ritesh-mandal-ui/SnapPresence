@@ -4,7 +4,7 @@ import bcrypt
 
 from datetime import datetime, timedelta, timezone
 
-from src.database.config import supabase
+from src.database.config import supabase, supabase_admin
 
 
 def hash_pass(password):
@@ -61,7 +61,7 @@ def teacher_login(
     password
 ):
     response = (
-        supabase
+        supabase_admin
         .table("teachers")
         .select("*")
         .eq("username", username)
@@ -102,14 +102,20 @@ def create_student(
     face_embedding=None,
     voice_embedding=None
 ):
+    if not isinstance(new_name, str) or not new_name.strip():
+        raise ValueError("Student name is required.")
+
+    if face_embedding is None:
+        raise ValueError("Face embedding is required.")
+
     data = {
-        "name": new_name,
+        "name": new_name.strip(),
         "face_embedding": face_embedding,
         "voice_embedding": voice_embedding
     }
 
     response = (
-        supabase
+        supabase_admin
         .table("students")
         .insert(data)
         .execute()
@@ -152,7 +158,7 @@ def create_subject(
     }
 
     response = (
-        supabase
+        supabase_admin
         .table("subjects")
         .insert(data)
         .execute()
@@ -182,7 +188,7 @@ def get_teacher_subjects(teacher_id):
     for attempt in range(3):
         try:
             response = (
-                supabase
+                supabase_admin
                 .table("subjects")
                 .select(
                     "*, subject_students(count), "

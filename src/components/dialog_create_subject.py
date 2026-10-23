@@ -1,6 +1,6 @@
 import streamlit as st
 
-from src.database.config import supabase
+from src.database.config import supabase_admin
 from src.database.db import create_subject
 
 
@@ -54,7 +54,7 @@ def create_subject_dialog(teacher_id):
         try:
 
             existing_subject = (
-                supabase
+                supabase_admin
                 .table("subjects")
                 .select("subject_id")
                 .eq(
