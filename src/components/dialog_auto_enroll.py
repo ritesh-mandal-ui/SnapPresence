@@ -1,6 +1,6 @@
 import streamlit as st
 
-from src.database.config import supabase
+from src.database.config import supabase_admin
 from src.database.db import enroll_student_to_subject
 
 
@@ -19,7 +19,7 @@ def auto_enroll(subject_code):
     student_id = student_data["student_id"]
 
     response = (
-        supabase
+        supabase_admin
         .table("subjects")
         .select("subject_id, name")
         .eq("subject_code", subject_code)
@@ -48,7 +48,7 @@ def auto_enroll(subject_code):
     subject_id = subject["subject_id"]
 
     check = (
-        supabase
+        supabase_admin
         .table("subject_students")
         .select("*")
         .eq("subject_id", subject_id)
