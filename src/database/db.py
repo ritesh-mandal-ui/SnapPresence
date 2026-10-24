@@ -433,7 +433,7 @@ def get_student_attendance(student_id):
 
 def get_attendance_for_teacher(teacher_id):
     response = (
-        supabase
+        supabase_admin
         .table("attendance_logs")
         .select(
             "*, subjects!inner(*)"
