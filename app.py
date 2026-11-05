@@ -1,3 +1,4 @@
+
 import streamlit as st
 import importlib
 
@@ -158,6 +159,7 @@ def main():
     if "login_type" not in st.session_state:
         st.session_state["login_type"] = None
 
+    # Handle completed quick enrollment.
     if st.session_state.get(
         "quick_enrollment_completed"
     ):
@@ -173,6 +175,27 @@ def main():
 
         st.query_params.clear()
 
+    # Detect password recovery callback from Supabase.
+    recovery_code = st.query_params.get("code")
+
+    recovery_error = (
+        st.query_params.get("error_code")
+        or st.query_params.get("error")
+    )
+
+    # Open Teacher Portal directly for recovery links.
+    if recovery_code or recovery_error:
+
+        st.session_state["login_type"] = "teacher"
+
+    if recovery_error:
+
+        st.error(
+            "This password reset link is invalid or expired. "
+            "Please request a new password reset link."
+        )
+
+    # Handle student quick enrollment links.
     join_code = st.query_params.get(
         "join-code"
     )
@@ -205,6 +228,7 @@ def main():
 
             return
 
+    # Main portal routing.
     match st.session_state["login_type"]:
 
         case "teacher":

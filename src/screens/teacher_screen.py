@@ -25,7 +25,7 @@ from src.components.dialog_voice_attendance import voice_attendance_dialog
 
 from src.pipelines.face_pipeline import predict_attendance
 
-from src.database.config import supabase
+from src.database.config import supabase, supabase_admin
 
 from src.database.db import (
     check_teacher_exists,
@@ -58,26 +58,31 @@ def generate_recovery_pkce():
         code_challenge
     )
 
-
 def send_teacher_password_reset(email):
 
-    if not email:
+    if not email or not email.strip():
         return (
             False,
             "Please enter your email."
         )
 
-    teacher = get_teacher_by_email(
-        email
-    )
-
-    if not teacher:
-        return (
-            False,
-            "No teacher account found with this email."
-        )
+    email = email.strip()
 
     try:
+        teacher = get_teacher_by_email(email)
+
+        if not teacher:
+            return (
+                False,
+                "No teacher account found with this email."
+            )
+
+        if not teacher.get("auth_user_id"):
+            return (
+                False,
+                "Password recovery is not enabled for this account. "
+                "Please contact the administrator."
+            )
 
         (
             code_verifier,
@@ -101,7 +106,10 @@ def send_teacher_password_reset(email):
                 "code_challenge": code_challenge,
                 "code_challenge_method": "s256"
             },
-            redirect_to="http://localhost:8501"
+            redirect_to=st.secrets.get(
+                "TEACHER_RECOVERY_REDIRECT_URL",
+                "http://localhost:8501"
+            )
         )
 
         return (
@@ -111,19 +119,21 @@ def send_teacher_password_reset(email):
 
     except Exception as e:
 
-        return (
-            False,
-            f"Unable to send password reset email: {e}"
+        print(
+            "Teacher password reset error:",
+            repr(e)
         )
 
+        return (
+            False,
+            "Unable to send password reset email. Please try again."
+        )
 
 def check_teacher_recovery_session():
 
     try:
 
-        code = st.query_params.get(
-            "code"
-        )
+        code = st.query_params.get("code")
 
         if not code:
             return False
@@ -152,24 +162,15 @@ def check_teacher_recovery_session():
 
             return False
 
-        response = (
-            supabase.auth.exchange_code_for_session(
-                {
-                    "auth_code": code,
-                    "code_verifier": code_verifier
-                }
-            )
+        response = supabase.auth.exchange_code_for_session(
+            {
+                "auth_code": code,
+                "code_verifier": code_verifier
+            }
         )
 
         if not response or not response.session:
             return False
-
-        st.query_params.clear()
-
-        st.session_state.pop(
-            "teacher_recovery_code_verifier",
-            None
-        )
 
         session = supabase.auth.get_session()
 
@@ -194,10 +195,13 @@ def check_teacher_recovery_session():
         if not user_id:
             return False
 
+        # Server-side lookup after successful PKCE verification.
         teacher = (
-            supabase
+            supabase_admin
             .table("teachers")
-            .select("*")
+            .select(
+                "teacher_id, username, name, email, auth_user_id"
+            )
             .eq(
                 "auth_user_id",
                 user_id
@@ -208,71 +212,69 @@ def check_teacher_recovery_session():
         if not teacher.data:
             return False
 
+        if len(teacher.data) != 1:
+            return False
+
+        teacher_data = teacher.data[0]
+
+        if teacher_data.get("auth_user_id") != user_id:
+            return False
+
+        st.query_params.clear()
+
+        st.session_state.pop(
+            "teacher_recovery_code_verifier",
+            None
+        )
+
         st.session_state[
             "teacher_recovery"
-        ] = teacher.data[0]
+        ] = teacher_data
 
         return True
 
     except Exception as e:
 
         print(
-            f"Teacher recovery error: {e}"
+            f"Teacher recovery error: {repr(e)}"
         )
 
         return False
 
-
 def teacher_screen():
 
     style_background_dashboard()
-
     style_base_layout()
 
-    if "teacher_data" in st.session_state:
-
-        teacher_dashboard()
-
-        return
-
+    # Check password recovery before normal teacher dashboard.
     if (
-        "teacher_recovery"
-        not in st.session_state
+        "teacher_recovery" not in st.session_state
+        and st.query_params.get("code")
     ):
-
         check_teacher_recovery_session()
 
-    if (
-        "teacher_recovery"
-        in st.session_state
-    ):
-
+    # Show password reset screen when recovery is active.
+    if "teacher_recovery" in st.session_state:
         teacher_screen_update_password()
+        return
 
-    elif (
-        "teacher_login_type"
-        not in st.session_state
+    # Normal logged-in teacher dashboard.
+    if "teacher_data" in st.session_state:
+        teacher_dashboard()
+        return
 
-        or st.session_state.teacher_login_type
-        == "login"
-    ):
+    # Normal teacher authentication flow.
+    if "teacher_login_type" not in st.session_state:
+        st.session_state.teacher_login_type = "login"
 
+    if st.session_state.teacher_login_type == "login":
         teacher_screen_login()
 
-    elif (
-        st.session_state.teacher_login_type
-        == "register"
-    ):
-
+    elif st.session_state.teacher_login_type == "register":
         teacher_screen_register()
 
-    elif (
-        st.session_state.teacher_login_type
-        == "forgot_password"
-    ):
-
+    elif st.session_state.teacher_login_type == "forgot_password":
         teacher_screen_forgot_password()
-
 
 def teacher_dashboard():
 
@@ -646,7 +648,7 @@ def teacher_tab_take_attendance():
                 ):
 
                     enrolled_res = (
-                        supabase
+                        supabase_admin
                         .table("subject_students")
                         .select(
                             "*, students(*)"
@@ -1124,7 +1126,7 @@ def teacher_tab_manage_students():
     )
 
     enrolled_res = (
-        supabase
+        supabase_admin
         .table("subject_students")
         .select(
             "student_id, subject_id, students(*)"
@@ -1226,6 +1228,43 @@ def teacher_tab_manage_students():
                     icon=":material/person_remove:",
                     width="stretch"
                 ):
+
+                    teacher_data = st.session_state.get(
+                        "teacher_data"
+                    )
+
+                    if (
+                        st.session_state.get(
+                            "is_logged_in"
+                        ) is not True
+                        or st.session_state.get(
+                            "user_role"
+                        ) != "teacher"
+                        or not isinstance(
+                            teacher_data,
+                            dict
+                        )
+                        or teacher_data.get(
+                            "teacher_id"
+                        ) != teacher_id
+                    ):
+
+                        st.error(
+                            "Please log in again to manage students."
+                        )
+
+                        st.stop()
+
+                    if selected_subject_id not in {
+                        subject["subject_id"]
+                        for subject in subjects
+                    }:
+
+                        st.error(
+                            "You are not authorized to manage this subject."
+                        )
+
+                        st.stop()
 
                     try:
 
@@ -1698,7 +1737,6 @@ def teacher_screen_forgot_password():
 
     footer_dashboard()
 
-
 def teacher_screen_update_password():
 
     teacher = st.session_state.get(
@@ -1712,9 +1750,7 @@ def teacher_screen_update_password():
             None
         )
 
-        st.session_state.teacher_login_type = (
-            "login"
-        )
+        st.session_state.teacher_login_type = "login"
 
         st.rerun()
 
@@ -1728,9 +1764,7 @@ def teacher_screen_update_password():
 
         header_dashboard()
 
-    with st.container(
-        border=True
-    ):
+    with st.container(border=True):
 
         st.header(
             "Create a new password",
@@ -1738,7 +1772,7 @@ def teacher_screen_update_password():
         )
 
         st.caption(
-            f"Reset password for {teacher['name']}"
+            f"Reset password for {teacher.get('name') or teacher.get('username')}"
         )
 
         new_password = st.text_input(
@@ -1785,14 +1819,54 @@ def teacher_screen_update_password():
 
             try:
 
-                supabase.auth.update_user({
-                    "password": new_password
-                })
+                # Verify the active Supabase Auth session.
+                session = supabase.auth.get_session()
 
+                if not session:
+                    raise ValueError(
+                        "Recovery session expired. "
+                        "Please request a new reset link."
+                    )
+
+                user = getattr(
+                    session,
+                    "user",
+                    None
+                )
+
+                current_user_id = getattr(
+                    user,
+                    "id",
+                    None
+                )
+
+                # Verify that this recovery session belongs
+                # to the teacher whose password is being changed.
+                if (
+                    not current_user_id
+                    or current_user_id != teacher.get("auth_user_id")
+                ):
+                    raise ValueError(
+                        "Recovery identity verification failed."
+                    )
+
+    
+        
+
+                #  Update the custom teacher password in PostgreSQL.
                 update_teacher_password(
                     teacher["teacher_id"],
+                    current_user_id,
                     new_password
                 )
+                # End the temporary Supabase recovery session.
+                try:
+                    supabase.auth.sign_out()
+                except Exception as signout_error:
+                    print(
+                        "Recovery session sign-out warning:",
+                        repr(signout_error)
+                    )    
 
                 st.session_state.pop(
                     "teacher_recovery",
@@ -1804,9 +1878,7 @@ def teacher_screen_update_password():
                     None
                 )
 
-                st.session_state.teacher_login_type = (
-                    "login"
-                )
+                st.session_state.teacher_login_type = "login"
 
                 st.success(
                     "Password updated successfully. "
@@ -1820,6 +1892,11 @@ def teacher_screen_update_password():
                 st.rerun()
 
             except Exception as e:
+
+                print(
+                    "Teacher password update error:",
+                    repr(e)
+                )
 
                 st.error(
                     f"Unable to update password: {e}"
